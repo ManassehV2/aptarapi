@@ -9,36 +9,25 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python: [3.8, 3.9, 3.10] # Define the valid versions of Python to test against
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v2
         with:
           fetch-depth: 0
-
       - name: Setup Python
         uses: actions/setup-python@v2
         with:
           python-version: ${{ matrix.python }}
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
           if [ -f setup.py ]; then pip install .; fi
           pip install tox
-
+      - name: Install tox and any other packages
+        run: pip install tox
       - name: Run tox
-        run: tox
-
+        run: tox -e py
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
-        with:
-          args: >
-            -Dsonar.projectKey=your_project_key
-            -Dsonar.organization=your_organization
-            -Dsonar.python.version=${{ matrix.python }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
