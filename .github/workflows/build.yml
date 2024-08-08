@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: [3.8, 3.9, 3.10] # Define the versions of Python to test against
+        python: [3.8, 3.9, 3.10] # Define the valid versions of Python to test against
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
