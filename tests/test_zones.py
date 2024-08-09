@@ -30,8 +30,8 @@ def override_get_db():
 
 app.dependency_overrides[zones.get_db] = override_get_db
 
-client = TestClient(app)
 
+client = TestClient(app)
 
 def test_create_zone():
     response = client.post(
