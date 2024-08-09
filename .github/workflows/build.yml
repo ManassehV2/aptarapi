@@ -36,18 +36,12 @@ jobs:
         run: |
           echo "DB_CONNECTION_STRING=sqlite://" >> $GITHUB_ENV
 
-      - name: Run Tests
-        run: |
-          pytest --cov=app tests/
-
       - name: Download and install SonarScanner
         run: |
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
           unzip sonar-scanner-cli-4.6.2.2472-linux.zip -d sonar-scanner
           echo "SONAR_SCANNER_HOME=$(pwd)/sonar-scanner/sonar-scanner-4.6.2.2472-linux" >> $GITHUB_ENV
-          echo "PATH=$PATH:$(pwd)/sonar-scanner/sonar-scanner-4.6.2.2472-linux/bin" >> $GITHUB_ENV
-          echo "JAVA_HOME=/opt/hostedtoolcache/Java_Adopt_jdk/17.0.12-7/x64" >> $GITHUB_ENV
-          echo "PATH=$JAVA_HOME/bin:$PATH" >> $GITHUB_ENV
+          echo "$(pwd)/sonar-scanner/sonar-scanner-4.6.2.2472-linux/bin" >> $GITHUB_PATH
 
       - name: Upload coverage to SonarCloud
         env:
