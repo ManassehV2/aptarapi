@@ -28,7 +28,7 @@ jobs:
 
       - name: Set environment variable
         run: |
-          export DB_CONNECTION_STRING="sqlite://"
+          echo "DB_CONNECTION_STRING=sqlite://" >> $GITHUB_ENV
 
       - name: Run Tests
         run: |
@@ -37,13 +37,13 @@ jobs:
       - name: Download and install SonarScanner
         run: |
           wget https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.6.2.2472-linux.zip
-          unzip sonar-scanner-cli-4.6.2.2472-linux.zip
-          export PATH="$PATH:$(pwd)/sonar-scanner-4.6.2.2472-linux/bin"
+          unzip sonar-scanner-cli-4.6.2.2472-linux.zip -d sonar-scanner
+          echo "SONAR_SCANNER_HOME=$(pwd)/sonar-scanner/sonar-scanner-4.6.2.2472-linux" >> $GITHUB_ENV
+          echo "PATH=$PATH:$(pwd)/sonar-scanner/sonar-scanner-4.6.2.2472-linux/bin" >> $GITHUB_ENV
 
       - name: Upload coverage to SonarCloud
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          DB_CONNECTION_STRING: "sqlite://" # Ensure the environment variable is available during SonarCloud upload
         run: |
           sonar-scanner \
           -Dsonar.projectKey=ManassehV2_aptarapi \
