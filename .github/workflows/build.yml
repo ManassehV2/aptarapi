@@ -26,9 +26,13 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt  # Installs dependencies from requirements.txt
 
+      - name: Set environment variable
+        run: |
+          export DB_CONNECTION_STRING="sqlite://"
+
       - name: Run Tests
         run: |
-          pytest --cov=app tests/  # Replace `app` and `tests/` with your application and test directory
+          pytest --cov=app tests/
 
       - name: Upload coverage to SonarCloud
         env:

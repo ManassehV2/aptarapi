@@ -1,4 +1,4 @@
-'''from fastapi.testclient import TestClient
+from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -43,4 +43,4 @@ def test_create_zone():
     assert data["title"] == "new zone for test"
     assert data["description"] == "new zone for test description"
     
-'''    
+    
