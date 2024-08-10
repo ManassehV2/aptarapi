@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routers import zones, plants, cameras, detection
-from .database import  SessionLocal, engine
 
 #models.Base.metadata.create_all(bind=engine)
 
