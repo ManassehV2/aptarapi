@@ -34,6 +34,14 @@ app.dependency_overrides[plants.get_db] = override_get_db
 
 client = TestClient(app)
 
+def test_get_zones():
+    response = client.get(
+        "/zones/")
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert len(data) == 0
+
+
 def test_create_zone():
     response = client.post(
         "/zones/",
@@ -43,6 +51,14 @@ def test_create_zone():
     data = response.json()
     assert data["title"] == "new zone for test"
     assert data["description"] == "new zone for test description"
+
+
+def test_get_plants():
+    response = client.get(
+        "/plants/")
+    assert response.status_code == 200, response.text
+    data = response.json()
+    assert len(data) == 0
 
 def test_create_plant():
     response = client.post(
