@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DB_CONNECTION_STRING: "mysql+mysqlconnector://user:password@localhost/dbname"
+      SONAR_SCANNER_OPTS: "-Dsonar.projectBaseDir=$(pwd)"
 
     steps:
       - name: Checkout Code
@@ -27,22 +28,23 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest pytest-cov  # Ensure pytest and pytest-cov are installed
+          pip install pytest pytest-cov
 
       - name: Run Tests with Coverage
         run: |
           pytest --junitxml=reports/results.xml --cov=app --cov-report=xml
-          mv coverage.xml reports/  # Move coverage.xml to the reports directory
+          mv coverage.xml reports/
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
             -Dsonar.projectKey=ManassehV2_aptarapi
             -Dsonar.organization=manassehv2
+            -Dsonar.sources=app
             -Dsonar.python.coverage.reportPaths=reports/coverage.xml
             -Dsonar.python.xunit.reportPath=reports/results.xml
             -Dsonar.coverage.exclusions=tests/**
