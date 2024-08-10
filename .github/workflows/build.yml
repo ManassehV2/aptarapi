@@ -27,21 +27,23 @@ jobs:
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest pytest-cov  # Ensure pytest and pytest-cov are installed
 
       - name: Run Tests with Coverage
         run: |
-          pytest --junitxml=results.xml --cov=app --cov-report=xml
+          pytest --junitxml=reports/results.xml --cov=app --cov-report=xml
+          coverage xml -i  # Regenerate the XML report with corrected paths
+          mv coverage.xml reports/coverage.xml  # Move the report to the correct directory
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
             -Dsonar.projectKey=ManassehV2_aptarapi
             -Dsonar.organization=manassehv2
-            -Dsonar.python.coverage.reportPaths=coverage.xml
-            -Dsonar.python.xunit.reportPath=results.xml
+            -Dsonar.sources=app
+            -Dsonar.python.coverage.reportPaths=reports/coverage.xml
+            -Dsonar.python.xunit.reportPath=reports/results.xml
             -Dsonar.coverage.exclusions=tests/**
