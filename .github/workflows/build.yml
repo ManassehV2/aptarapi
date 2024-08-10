@@ -10,16 +10,19 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
+    env:
+      DB_CONNECTION_STRING: "mysql+mysqlconnector://user:password@localhost/dbname"
+
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
         with:
-          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+          fetch-depth: 0
 
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.x" # Specify your Python version
+          python-version: "3.x"
 
       - name: Install Dependencies
         run: |
