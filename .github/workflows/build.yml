@@ -28,7 +28,7 @@ jobs:
 
       - name: Run Tests with Coverage
         run: |
-          pytest --junitxml=reports/results.xml --cov=your_package --cov-report=xml  # Replace 'your_package' with the package you want to measure coverage for
+          pytest --junitxml=reports/results.xml --cov=app --cov-report=xml
           mv coverage.xml reports/  # Move coverage.xml to the reports directory
 
       - name: SonarCloud Scan
