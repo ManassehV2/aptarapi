@@ -29,6 +29,7 @@ jobs:
       - name: Run Tests with Coverage
         run: |
           pytest --junitxml=reports/results.xml --cov=your_package --cov-report=xml  # Replace 'your_package' with the package you want to measure coverage for
+          mv coverage.xml reports/  # Move coverage.xml to the reports directory
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
@@ -37,6 +38,8 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            -Dsonar.python.xunit.reportPath=reports/results.xml  # Path to the test results
-            -Dsonar.python.coverage.reportPaths=coverage.xml  # Path to the coverage report
-            -Dsonar.coverage.exclusions=tests/**  # Optional: exclude test files from coverage
+            -Dsonar.projectKey=ManassehV2_aptarapi
+            -Dsonar.organization=manassehv2
+            -Dsonar.python.coverage.reportPaths=reports/coverage.xml
+            -Dsonar.python.xunit.reportPath=reports/results.xml
+            -Dsonar.coverage.exclusions=tests/**
