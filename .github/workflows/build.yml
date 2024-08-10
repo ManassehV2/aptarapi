@@ -32,6 +32,8 @@ jobs:
         run: |
           pytest --junitxml=reports/results.xml --cov=app --cov-report=xml
           coverage xml -i  # Regenerate the XML report with corrected paths
+          # Replace absolute paths with relative paths in coverage.xml
+          sed -i 's|/home/runner/work/aptarapi/aptarapi/||g' coverage.xml
           mv coverage.xml reports/coverage.xml  # Move the report to the correct directory
 
       - name: SonarCloud Scan
@@ -43,7 +45,7 @@ jobs:
           args: >
             -Dsonar.projectKey=ManassehV2_aptarapi
             -Dsonar.organization=manassehv2
-            -Dsonar.sources=app
+            -Dsonar.sources=aptarapi
             -Dsonar.python.coverage.reportPaths=reports/coverage.xml
             -Dsonar.python.xunit.reportPath=reports/results.xml
             -Dsonar.coverage.exclusions=tests/**
