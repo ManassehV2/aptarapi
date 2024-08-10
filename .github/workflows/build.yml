@@ -22,27 +22,28 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v3
         with:
-          python-version: "3.x"
+          python-version: "3.10"
 
       - name: Install Dependencies
         run: |
           pip install -r requirements.txt
-          pip install pytest pytest-cov  # Ensure pytest and pytest-cov are installed
 
       - name: Run Tests with Coverage
         run: |
           pytest --junitxml=reports/results.xml --cov=app --cov-report=xml
-          mv coverage.xml reports/  # Move coverage.xml to the reports directory
+          coverage xml -i  # Regenerate the XML report with corrected paths
+          mv coverage.xml reports/coverage.xml  # Move the report to the correct directory
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
             -Dsonar.projectKey=ManassehV2_aptarapi
             -Dsonar.organization=manassehv2
+            -Dsonar.sources=app
             -Dsonar.python.coverage.reportPaths=reports/coverage.xml
             -Dsonar.python.xunit.reportPath=reports/results.xml
             -Dsonar.coverage.exclusions=tests/**
