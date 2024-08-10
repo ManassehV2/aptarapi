@@ -5,16 +5,38 @@ on:
       - master
   pull_request:
     types: [opened, synchronize, reopened]
+
 jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Code
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: Set up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.x" # Specify your Python version
+
+      - name: Install Dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov  # Ensure pytest and pytest-cov are installed
+
+      - name: Run Tests with Coverage
+        run: |
+          pytest --junitxml=reports/results.xml --cov=your_package --cov-report=xml  # Replace 'your_package' with the package you want to measure coverage for
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.python.xunit.reportPath=reports/results.xml  # Path to the test results
+            -Dsonar.python.coverage.reportPaths=coverage.xml  # Path to the coverage report
+            -Dsonar.coverage.exclusions=tests/**  # Optional: exclude test files from coverage
