@@ -36,34 +36,28 @@ def get_zone_by_plant_id(db: Session, plant_id: int):
     return db.query(models.Zone).filter(models.Zone.plant_id == plant_id)
 
 def create_zone(db: Session, new_zone: schemas.CreateZone):
-    db_zone = models.Zone()
-    db_zone.title = new_zone.title
-    db_zone.description = new_zone.description
-    db_zone.plant_id = new_zone.plant_id
-
+    db_zone = models.Zone(title=new_zone.title, description=new_zone.description, plant_id=new_zone.plant_id, assignee_id=new_zone.assignee_id)
+    
     db.add(db_zone)
     db.commit()
     db.refresh(db_zone)
     return db_zone
 
 def create_plant(db: Session, new_plant: schemas.CreatePlant):
-    db_plant = models.Plant()
-    db_plant.name = new_plant.name
-    db_plant.description = db_plant.description
-    db_plant.address = db_plant.address
-
+    db_plant = models.Plant(name=new_plant.name, description=new_plant.description, address=new_plant.address)
+    
     db.add(db_plant)
     db.commit()
     db.refresh(db_plant)
     return db_plant
 
 
-def create_recording(db: Session, new_recording: models.Recording):
-    
-    db.add(new_recording)
+def create_recording(db: Session, new_recording: schemas.CreateRecording):
+    db_recording = models.Recording(starttime=new_recording.starttime, endtime=new_recording.endtime, camera_id=new_recording.camera_id)
+    db.add(db_recording)
     db.commit()
-    db.refresh(new_recording)
-    return new_recording
+    db.refresh(db_recording)
+    return db_recording
 
 def update_recording(db: Session, recording_id: int):
     db_recording = db.query(models.Recording).filter(models.Recording.id == recording_id).first()

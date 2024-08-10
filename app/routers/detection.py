@@ -11,12 +11,11 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from ultralytics import YOLO
 
-from app import models
 from app.models import Incident
 
 from ..database import SessionLocal
 
-from .. import crud
+from .. import crud, schemas
 
 
 router = APIRouter()
@@ -28,13 +27,13 @@ logger = logging.getLogger(__name__)
 async def initialize_webcam():
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        raise Exception("Could not open webcam")
+        raise RuntimeError("Could not open webcam")
     return cap
 
 def process_frame(cap):
     ret, frame = cap.read()
     if not ret:
-        raise Exception("Failed to capture frame from webcam")
+        raise OSError("Failed to capture frame from webcam")
     frame = cv2.resize(frame, (640, 480))
     return frame
 
@@ -115,13 +114,12 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
         logger.info(f"Received form data: {form_data}")
 
         #create the corresponding record for the incidents
-        new_record = models.Recording()
-        new_record.camera_id =  int(form_data.get("camera"))
-        new_record.starttime = datetime.datetime.now()
-        new_record.endtime = datetime.datetime.now()
-
-        result = crud.create_recording(db, new_recording=new_record)
-        
+        result = crud.create_recording(db, schemas.CreateRecording(
+            starttime=datetime.datetime.now(),
+            endtime=datetime.datetime.now(),
+            camera_id=int(form_data.get("camera")) 
+            ))
+            
         try:
             cap = await initialize_webcam()
         except Exception as e:

@@ -13,6 +13,8 @@ class Incident(BaseModel):
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 
 class ReadRecording(BaseModel):
@@ -23,11 +25,17 @@ class ReadRecording(BaseModel):
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 class CreateRecording(BaseModel):
     starttime: datetime.datetime
-    endtime: datetime.datetime 
+    endtime: datetime.datetime  
     camera_id: int 
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 
 class Camera(BaseModel):
@@ -40,17 +48,21 @@ class Camera(BaseModel):
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 class ReadZone(BaseModel):
     id: int
     title: str
     description: str
     plant_id: int
-    #assignee_id: int
+    assignee_id: int
     cameras: list[Camera] = []
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 class CreateZone(BaseModel):
     title: str
@@ -61,6 +73,8 @@ class CreateZone(BaseModel):
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 
 
@@ -72,6 +86,8 @@ class Scenario(BaseModel):
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 
 class Plant(BaseModel):
@@ -83,6 +99,8 @@ class Plant(BaseModel):
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 class ReadPlant(BaseModel):
     id: int
@@ -93,6 +111,8 @@ class ReadPlant(BaseModel):
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 class CreatePlant(BaseModel):
     name: str
@@ -101,4 +121,6 @@ class CreatePlant(BaseModel):
 
     class Config:
         orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 

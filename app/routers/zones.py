@@ -21,7 +21,7 @@ def get_db():
 @router.get("/", response_model=list[schemas.ReadZone])
 def get_zones(db: Session = Depends(get_db)):
     db_zones = crud.get_all_zone(db)
-    if db_zones is None:
+    if not db_zones:
         raise HTTPException(status_code=404, detail="Zone not found")
     return db_zones
 
