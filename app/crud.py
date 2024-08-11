@@ -32,6 +32,9 @@ def get_zone_by_id(db: Session, zone_id: int):
 def get_cameras_in_zone_by_id(db: Session, zone_id: int):
     return db.query(models.Camera).filter(models.Camera.zone_id == zone_id)
 
+def get_camera_by_id(db: Session, camera_id: int):
+    return db.query(models.Camera).get(camera_id)
+
 def get_zone_by_plant_id(db: Session, plant_id: int):
     return db.query(models.Zone).filter(models.Zone.plant_id == plant_id)
 

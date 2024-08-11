@@ -23,7 +23,7 @@ def get_db():
 @router.get("/", response_model=list[schemas.ReadPlant])
 def get_plants(db: Session = Depends(get_db)):
     db_plants = crud.get_all_plants(db)
-    if db_plants is None:
+    if db_plants.count() == 0:
         raise HTTPException(status_code=404, detail="Plants not found")
     return db_plants
 
@@ -35,6 +35,6 @@ def create_plant(new_plant: schemas.CreatePlant, db: Session = Depends(get_db)):
 @router.get("/zones/{plant_id}", response_model=list[schemas.ReadZone])
 def get_zone_by_plant_id(plant_id: int, db: Session = Depends(get_db)):
     db_zone = crud.get_zone_by_plant_id(db, plant_id=plant_id)
-    if db_zone is None:
+    if db_zone.count() == 0:
         raise HTTPException(status_code=404, detail="No Zone in a the given plant")
     return db_zone

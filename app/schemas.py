@@ -51,6 +51,29 @@ class Camera(BaseModel):
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
 
+class ReadCamera(BaseModel):
+    id: int
+    name: str
+    description: str
+    ipaddress: str
+    zone_id: int
+    recordings: list[ReadRecording] = []
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+
+class CreateCamera(BaseModel):
+    name: str
+    description: str
+    ipaddress: str
+    zone_id: int
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 class ReadZone(BaseModel):
     id: int
     title: str

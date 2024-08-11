@@ -24,11 +24,25 @@ router = APIRouter()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-async def initialize_webcam():
+async def initialize_camera(ip_cam_url=None):
+    cap = None
+    # Try to open the IP camera first if the URL is provided
+    if ip_cam_url is not None:
+        cap = cv2.VideoCapture(ip_cam_url)
+        if cap.isOpened():
+            print(f"Connected to IP camera at {ip_cam_url}")
+            return cap
+        else:
+            print(f"Failed to connect to IP camera at {ip_cam_url}. Falling back to the webcam.")
+    
+    # If IP camera connection fails or no URL is provided, try the webcam
     cap = cv2.VideoCapture(0)
     if not cap.isOpened():
-        raise RuntimeError("Could not open webcam")
+        raise RuntimeError("Could not open webcam or IP camera")
+    
+    print("Connected to the default webcam.")
     return cap
+
 
 def process_frame(cap):
     ret, frame = cap.read()
@@ -121,7 +135,7 @@ async def websocket_endpoint(websocket: WebSocket, db: Session = Depends(get_db)
             ))
             
         try:
-            cap = await initialize_webcam()
+            cap = await initialize_camera(crud.get_camera_by_id(db, form_data.get("camera")).ipaddress)
         except Exception as e:
             await websocket.send_json({"error": str(e)})
             await websocket.close()
