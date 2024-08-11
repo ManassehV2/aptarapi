@@ -8,7 +8,11 @@ This document outlines the steps required to set up and run the application. All
 
 ### Step 1: Creating a Virtual Environment
 
-To avoid dependency conflicts, it is recommended to create a virtual environment. You can do this using the following command:
+Begin by cloning the repository to your local machine, navigating into the project directory, and creating a virtual environment:
+
+`git clone https://github.com/ManassehV2/aptarapi.git`
+
+`cd project-name`
 
 `python3 -m venv aptarapivenv`
 
@@ -16,9 +20,7 @@ To avoid dependency conflicts, it is recommended to create a virtual environment
 
 Activate the virtual enviroment using the following command:
 
-`
-source ./aptarapivenv/bin/activate
-`
+`source ./aptarapivenv/bin/activate`
 
 ### Step 3: Install required dependencies
 
