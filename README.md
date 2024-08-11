@@ -16,7 +16,7 @@ To avoid dependency conflicts, it is recommended to create a virtual environment
 
 Activate the virtual enviroment using the following command:
 
-`bash
+`
 source ./aptarapivenv/bin/activate
 `
 
