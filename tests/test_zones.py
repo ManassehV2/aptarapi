@@ -5,7 +5,7 @@ from sqlalchemy.pool import StaticPool
 
 from app.database import Base
 from app.main import app
-from app.models import Zone, Camera
+from app.models import Zone, Camera, Plant
 from app.routers import plants, zones, cameras
 
 SQLALCHEMY_DATABASE_URL = "sqlite://"
@@ -90,16 +90,30 @@ def test_get_camera_by_id_not_found():
     testcameraid = 1000
     response = client.get(f"/cameras/{testcameraid}")
     assert response.status_code == 404
-    
 
 
+def test_get_zone_by_plant_id_not_found():
+    plantid = 1000
+    response = client.get(f"/plants/zones/{plantid}")
+    assert response.status_code == 404
 
-def test_get_plants():
+
+def test_get_plants_not_found():
     response = client.get(
         "/plants/")
-    assert response.status_code == 200, response.text
-    data = response.json()
-    assert len(data) == 0
+    assert response.status_code == 404
+
+def test_get_plants():
+    session = TestingSessionLocal()
+    testplant = Plant(name="testplant", description="testplantdescription", address="testplant address")
+    session.add(testplant)
+    session.commit()
+    session.refresh(testplant)
+    response = client.get(
+        "/plants/")
+    
+    assert response.status_code == 200
+
 
 def test_create_plant():
     response = client.post(

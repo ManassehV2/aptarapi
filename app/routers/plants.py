@@ -23,7 +23,7 @@ def get_db():
 @router.get("/", response_model=list[schemas.ReadPlant])
 def get_plants(db: Session = Depends(get_db)):
     db_plants = crud.get_all_plants(db)
-    if db_plants is None:
+    if db_plants.count() == 0:
         raise HTTPException(status_code=404, detail="Plants not found")
     return db_plants
 
