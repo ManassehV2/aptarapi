@@ -1,5 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+
+from app.routers import scenario
 from .routers import zones, plants, cameras, detection
 
 #models.Base.metadata.create_all(bind=engine)
@@ -31,3 +34,4 @@ app.include_router(zones.router)
 app.include_router(plants.router)
 app.include_router(cameras.router)
 app.include_router(detection.router)
+app.include_router(scenario.router)

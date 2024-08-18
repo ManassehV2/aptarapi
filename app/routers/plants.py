@@ -29,7 +29,6 @@ def get_plants(db: Session = Depends(get_db)):
 
 @router.post("/", response_model=schemas.ReadPlant)
 def create_plant(new_plant: schemas.CreatePlant, db: Session = Depends(get_db)):
-    print(new_plant) 
     return crud.create_plant(db=db, new_plant=new_plant)
 
 @router.get("/zones/{plant_id}", response_model=list[schemas.ReadZone])

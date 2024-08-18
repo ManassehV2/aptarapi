@@ -1,5 +1,5 @@
 import datetime
-from sqlalchemy import Column, DateTime, Float, ForeignKey, Integer, LargeBinary, String, TIMESTAMP
+from sqlalchemy import UUID, Boolean, Column, DateTime, Float, ForeignKey, Integer, LargeBinary, String, TIMESTAMP
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -12,6 +12,7 @@ class Plant(Base):
     name = Column(String(100))
     description = Column(String(100))
     address = Column(String(100))
+    plantConfidence = Column(Float)
 
     zones = relationship("Zone", back_populates="plant")
 
@@ -41,6 +42,7 @@ class Zone(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String(100), index=True)
     description = Column(String(100))
+    zoneconfidence = Column(Float)
     plant_id = Column(Integer, ForeignKey("plants.id"))
     assignee_id = Column(Integer, ForeignKey("assignees.id"))
 
@@ -68,6 +70,8 @@ class Recording(Base):
     id = Column(Integer, primary_key=True)
     starttime = Column(TIMESTAMP)
     endtime = Column(TIMESTAMP)
+    status = Column(Boolean, unique=False, default=True)
+    task_id = Column(String(256))
     camera_id = Column(Integer, ForeignKey("cameras.id"))
 
     camera = relationship("Camera", back_populates="recordings")
