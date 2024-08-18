@@ -28,5 +28,5 @@ def get_scenarios(db: Session = Depends(get_db)):
     return db_scenarios
 
 @router.post("/", response_model=schemas.CreateScenario)
-def create_Scenario(new_scenario: schemas.CreateScenario, db: Session = Depends(get_db)): 
+def create_scenario(new_scenario: schemas.CreateScenario, db: Session = Depends(get_db)): 
     return crud.create_scenario(db=db, new_scenario=new_scenario)

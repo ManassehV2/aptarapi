@@ -7,19 +7,6 @@ from app import schemas
 
 from . import models
 
-async def save_detections_to_db(queue: Queue, db: AsyncSession):
-    while True:
-        db_detection = await queue.get()
-        try:
-            db.add(db_detection)
-            await db.commit()
-            await db.refresh(db_detection)
-        except Exception as e:
-            logger.error(f"Database error: {e}")
-        finally:
-            queue.task_done()
-
-
 def get_all_plants(db: Session):
     return db.query(models.Plant)
 def get_all_scenarios(db: Session):

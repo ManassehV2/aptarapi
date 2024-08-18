@@ -1,10 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-#from app import models
+
 from app.routers import scenario
 from .routers import zones, plants, cameras, detection
-#from app.database import engine
 
 #models.Base.metadata.create_all(bind=engine)
 
