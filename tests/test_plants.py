@@ -13,17 +13,18 @@ def test_get_plants_not_found():
 def test_create_plant():
     response = client.post(
         "/plants/",
-        json={"name": "new plant for test", "description": "new plant for test description", "address": "New plant address"},
+        json={"name": "new plant for test", "description": "new plant for test description", "address": "New plant address", "plantConfidence": 0.85},
     )
     assert response.status_code == 200, response.text
     data = response.json()
     assert data["name"] == "new plant for test"
     assert data["description"] == "new plant for test description"
     assert data["address"] == "New plant address"
+    assert data["plantConfidence"] == 0.85
 
 def test_get_plants():
     session = TestingSessionLocal()
-    testplant = Plant(name="testplant", description="testplantdescription", address="testplant address")
+    testplant = Plant(name="testplant", description="testplantdescription", address="testplant address", plantConfidence=0.85)
     session.add(testplant)
     session.commit()
     session.refresh(testplant)

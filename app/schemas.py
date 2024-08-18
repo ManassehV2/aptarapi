@@ -1,4 +1,5 @@
 import datetime
+from typing import Optional
 from pydantic import BaseModel
 
 
@@ -20,7 +21,9 @@ class Incident(BaseModel):
 class ReadRecording(BaseModel):
     id: int
     starttime: datetime.datetime
-    endtime: datetime.datetime 
+    endtime: Optional[datetime.datetime]
+    status: bool
+    task_id: Optional[str] 
     camera_id: int 
 
     class Config:
@@ -30,7 +33,9 @@ class ReadRecording(BaseModel):
 
 class CreateRecording(BaseModel):
     starttime: datetime.datetime
-    endtime: datetime.datetime  
+    endtime: Optional[datetime.datetime] = None
+    status: bool = True
+    task_id: Optional[str] = None  
     camera_id: int 
     class Config:
         orm_mode = True
@@ -74,12 +79,22 @@ class CreateCamera(BaseModel):
         orm_mode = True
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
+
+class CreateZoneCamera(BaseModel):
+    name: str
+    description: str
+    ipaddress: str
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 class ReadZone(BaseModel):
     id: int
     title: str
     description: str
     plant_id: int
     assignee_id: int
+    zoneconfidence: Optional[float]
     cameras: list[Camera] = []
 
     class Config:
@@ -91,8 +106,9 @@ class CreateZone(BaseModel):
     title: str
     description: str
     plant_id: int
+    zoneconfidence: Optional[float]
     assignee_id: int
-    cameras: list[Camera] = []
+    cameras: list[CreateZoneCamera] = []
 
     class Config:
         orm_mode = True
@@ -112,12 +128,31 @@ class Scenario(BaseModel):
         allow_population_by_field_name = True
         arbitrary_types_allowed = True
 
+class ReadScenario(BaseModel):
+    id: int 
+    name: str
+    description: Optional[str] 
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
+
+class CreateScenario(BaseModel):
+    name: str
+    description: Optional[str] 
+
+    class Config:
+        orm_mode = True
+        allow_population_by_field_name = True
+        arbitrary_types_allowed = True
 
 class Plant(BaseModel):
     id: int
     name: str
     description: str
-    address: str 
+    address: str
+    plantConfidence: float 
     zones : list[ReadZone] = []
 
     class Config:
@@ -130,6 +165,7 @@ class ReadPlant(BaseModel):
     name: str
     description: str
     address: str
+    plantConfidence: float
     zones : list[ReadZone] 
 
     class Config:
@@ -140,7 +176,8 @@ class ReadPlant(BaseModel):
 class CreatePlant(BaseModel):
     name: str
     description: str
-    address: str 
+    address: str
+    plantConfidence: float
 
     class Config:
         orm_mode = True

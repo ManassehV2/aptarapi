@@ -15,12 +15,14 @@ def test_get_zones():
 def test_create_zone():
     response = client.post(
         "/zones/",
-        json={"title": "new zone for test", "description": "new zone for test description", "assignee_id": 1, "plant_id": 1, "assignee_id": 1},
+        json={"title": "new zone for test", "description": "new zone for test description", "assignee_id": 1, "plant_id": 1, "assignee_id": 1, "zoneconfidence": 0.75},
     )
     assert response.status_code == 200, response.text
     data = response.json()
     assert data["title"] == "new zone for test"
     assert data["description"] == "new zone for test description"
+    assert data["zoneconfidence"] == 0.75
+    
 
 def test_get_zone_by_id():
     session = TestingSessionLocal()
