@@ -12,7 +12,7 @@ from app.database import SessionLocal
 from app.models import Incident
 from .celery import celery_app
 from . import crud, schemas
-from datetime import datetime
+from datetime import datetime, timezone
 from app.celery import celery_app
 
 
@@ -74,60 +74,66 @@ def handle_detections(model, frame, zoneconf, zonescenarios):
     return frame, detection_list
 
 def save_detections(db, detection_list, buffer, record_id):
-    debounce_time_minutes = 10  # Set the debounce time to 10 minutes
-    debounce_time_seconds = debounce_time_minutes * 60  # Convert minutes to seconds
+    debounce_time_seconds = 1 * 60  # 1 minute debounce time converted to seconds
+    current_timestamp = datetime.now(timezone.utc)  # Get the current timestamp once
 
     for detection in detection_list:
-        current_timestamp = datetime.utcnow()  # Always assign the current timestamp
         cache_key = (record_id, detection["class_name"])
 
-        # Check the cache first
-        last_timestamp = detection_cache.get(cache_key)
+        if should_skip_detection(cache_key, db, record_id, detection["class_name"], current_timestamp, debounce_time_seconds):
+            continue
 
-        if last_timestamp:
-            time_diff = (current_timestamp - last_timestamp).total_seconds()
-            
-            # Skip saving if the last detection was within the debounce time (10 minutes)
-            if time_diff < debounce_time_seconds:
-                print(f"Skipping detection for {detection['class_name']} as it occurred within the last 10 minutes (cached).")
-                continue
-        else:
-            # If not found in cache, check the database
-            last_detection = db.query(Incident).filter_by(
-                recording_id=record_id,
-                class_name=detection["class_name"]
-            ).order_by(desc(Incident.timestamp)).first()
+        save_detection(db, buffer, record_id, detection, current_timestamp, cache_key)
 
-            if last_detection:
-                last_timestamp = last_detection.timestamp
-                time_diff = (current_timestamp - last_timestamp).total_seconds()
 
-                # Update the cache with the latest timestamp
-                detection_cache[cache_key] = last_timestamp
+def should_skip_detection(cache_key, db, record_id, class_name, current_timestamp, debounce_time_seconds):
+    last_timestamp = get_last_detection_timestamp(cache_key, db, record_id, class_name)
 
-                if time_diff < debounce_time_seconds:
-                    print(f"Skipping detection for {detection['class_name']} as it occurred within the last 10 minutes (DB).")
-                    continue
+    if last_timestamp and (current_timestamp - last_timestamp).total_seconds() < debounce_time_seconds:
+        print(f"Skipping detection for {class_name} as it occurred within the last minute.")
+        return True
+    
+    return False
 
-        # Update the cache with the current timestamp for this class and recording_id
-        detection_cache[cache_key] = current_timestamp
 
-        # If no recent detection or beyond the debounce time, save the new detection
-        db_detection = Incident(
+def get_last_detection_timestamp(cache_key, db, record_id, class_name):
+    # Check cache first
+    last_timestamp = detection_cache.get(cache_key)
+
+    if not last_timestamp:
+        # If not in cache, check the database
+        last_detection = db.query(Incident).filter_by(
             recording_id=record_id,
-            class_name=detection["class_name"],
-            confidence=detection["confidence"],
-            bbox=str(detection["bbox"]),
-            frame=buffer.tobytes(),
-            timestamp=current_timestamp  # Use the current timestamp
-        )
-        try:
-            db.add(db_detection)
-            db.commit()
-            print(f"Detection saved to DB: {db_detection}")
-        except Exception as e:
-            print(f"Error saving to DB: {e}")
-            db.rollback()
+            class_name=class_name
+        ).order_by(desc(Incident.timestamp)).first()
+
+        if last_detection:
+            last_timestamp = last_detection.timestamp
+            detection_cache[cache_key] = last_timestamp  # Update cache with DB timestamp
+
+    return last_timestamp
+
+
+def save_detection(db, buffer, record_id, detection, current_timestamp, cache_key):
+    detection_cache[cache_key] = current_timestamp
+
+    db_detection = Incident(
+        recording_id=record_id,
+        class_name=detection["class_name"],
+        confidence=detection["confidence"],
+        bbox=str(detection["bbox"]),
+        frame=buffer.tobytes(),
+        timestamp=current_timestamp
+    )
+
+    try:
+        db.add(db_detection)
+        db.commit()
+        print(f"Detection saved to DB: {db_detection}")
+    except Exception as e:
+        print(f"Error saving to DB: {e}")
+        db.rollback()
+
 
 
 @celery_app.task(bind=True)
