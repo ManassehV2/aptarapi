@@ -1,11 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-
-from app.routers import scenario
+from app.routers import assignees, scenario
 from .routers import zones, plants, cameras, detection
 
-#models.Base.metadata.create_all(bind=engine)
+from . import models
+from .database import  engine
+
+models.Base.metadata.create_all(bind=engine)
 
 
 app = FastAPI(
@@ -25,6 +26,7 @@ origins = [
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -35,3 +37,4 @@ app.include_router(plants.router)
 app.include_router(cameras.router)
 app.include_router(detection.router)
 app.include_router(scenario.router)
+app.include_router(assignees.router)

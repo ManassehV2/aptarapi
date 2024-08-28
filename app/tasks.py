@@ -143,14 +143,14 @@ def run_detection(self, camera_id, model_path, record_id):
     try:
         model = YOLO(model_path)
         cap = initialize_camera(crud.get_camera_by_id(db, camera_id).ipaddress)
-        zoneconf = crud.get_zone_confidence_level(db, camera_id)
-        zonescenarios = crud.get_zone_scenario(db=db, camera_id=camera_id)
+        confidence = (crud.get_recording(db=db, recording_id=record_id).confidence/100) or crud.get_zone_confidence_level(db, camera_id)
+        recordingscenarios = crud.get_zone_scenario(db=db, recording_id=record_id)
         
         while True:
             start_time = time.time()
 
             frame = process_frame(cap)
-            frame, detection_list = handle_detections(model, frame, zoneconf, zonescenarios)
+            frame, detection_list = handle_detections(model, frame, confidence, recordingscenarios)
 
             # Save detections to DB
             buffer = cv2.imencode('.jpg', frame)[1]

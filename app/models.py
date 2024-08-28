@@ -1,9 +1,13 @@
 import datetime
-from sqlalchemy import UUID, Boolean, Column, DateTime, Float, ForeignKey, Integer, LargeBinary, String, TIMESTAMP
+import enum
+from sqlalchemy import Boolean, Column, DateTime, Enum, Float, ForeignKey, Integer, LargeBinary, String, TIMESTAMP
 from sqlalchemy.orm import relationship
 
 from .database import Base
 
+class PlantStatus(str, enum.Enum):
+    active = "active"
+    inactive = "inactive"
 
 class Plant(Base):
     __tablename__ = "plants"
@@ -13,6 +17,7 @@ class Plant(Base):
     description = Column(String(100))
     address = Column(String(100))
     plantConfidence = Column(Float)
+    plantstatus = Column(Enum(PlantStatus), default=PlantStatus.inactive, nullable=False)
 
     zones = relationship("Zone", back_populates="plant")
 
@@ -27,13 +32,12 @@ class Assignee(Base):
     
     assignee = relationship("Zone", back_populates="assignees")
 
-class ZoneScenario(Base):
-    __tablename__ = "zone_scenarios"
+class RecordingScenario(Base):
+    __tablename__ = "recording_scenarios"
 
     id = Column(Integer, primary_key=True)
-
-    zoneid = Column(Integer)
-    scenarioid = Column(Integer)
+    recording_id = Column(Integer)
+    scenario_id = Column(Integer)
 
 
 class Zone(Base):
@@ -44,6 +48,7 @@ class Zone(Base):
     description = Column(String(100))
     zoneconfidence = Column(Float)
     plant_id = Column(Integer, ForeignKey("plants.id"))
+    zonestatus = Column(Enum(PlantStatus), default=PlantStatus.inactive, nullable=False)
     assignee_id = Column(Integer, ForeignKey("assignees.id"))
 
     plant = relationship("Plant", back_populates="zones")
@@ -68,13 +73,19 @@ class Recording(Base):
     __tablename__ = "recordings"
 
     id = Column(Integer, primary_key=True)
+    name = Column(String(256))
     starttime = Column(TIMESTAMP)
     endtime = Column(TIMESTAMP)
     status = Column(Boolean, unique=False, default=True)
     task_id = Column(String(256))
+    zone_id = Column(Integer)
+    confidence = Column(Integer)
+    assignee_id = Column(Integer)
     camera_id = Column(Integer, ForeignKey("cameras.id"))
+    detection_type_id = Column(Integer, ForeignKey("detectiontypes.id"))
 
     camera = relationship("Camera", back_populates="recordings")
+    detectiontype = relationship("DetectionType", back_populates="recordings")
     incidents = relationship("Incident", back_populates="recording")
 
 
@@ -98,4 +109,14 @@ class Scenario(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(100), index=True)
     description = Column(String(100))
+
+class DetectionType(Base):
+    __tablename__ = "detectiontypes"
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String(100), index=True)
+    description = Column(String(100))
+    modelpath = Column(String(100))
+
+    recordings = relationship("Recording", back_populates="detectiontype")
     

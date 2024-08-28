@@ -1,7 +1,17 @@
 import datetime
+from enum import Enum
 from typing import Optional
 from pydantic import BaseModel
 
+
+class DetectionTypeEnum(str, Enum):
+    ppe = "ppe"
+    pallet = "pallet"
+    forklift = "forklift"
+
+class PlantStatusEnum(str, Enum):
+    active = "active"
+    inactive = "inactive"
 
 class Incident(BaseModel):
     id: int 
@@ -13,33 +23,40 @@ class Incident(BaseModel):
     recording_id: int
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 
 class ReadRecording(BaseModel):
     id: int
+    name: str
+    zone_id: int
+    assignee_id: int
+    detection_type_id: int
     starttime: datetime.datetime
     endtime: Optional[datetime.datetime]
     status: bool
+    confidence: Optional[int]
     task_id: Optional[str] 
     camera_id: int 
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 class CreateRecording(BaseModel):
-    starttime: datetime.datetime
-    endtime: Optional[datetime.datetime] = None
-    status: bool = True
-    task_id: Optional[str] = None  
-    camera_id: int 
+    name: str
+    zone_id: int
+    assignee_id: int
+    detection_type: int
+    camera_id: int
+    confidence: Optional[int]
+    status: bool = True     
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 
@@ -52,8 +69,8 @@ class Camera(BaseModel):
     recordings: list[ReadRecording] = []
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 class ReadCamera(BaseModel):
@@ -65,8 +82,8 @@ class ReadCamera(BaseModel):
     recordings: list[ReadRecording] = []
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 class CreateCamera(BaseModel):
@@ -76,8 +93,8 @@ class CreateCamera(BaseModel):
     zone_id: int
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 class CreateZoneCamera(BaseModel):
@@ -85,8 +102,8 @@ class CreateZoneCamera(BaseModel):
     description: str
     ipaddress: str
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 class ReadZone(BaseModel):
     id: int
@@ -95,11 +112,12 @@ class ReadZone(BaseModel):
     plant_id: int
     assignee_id: int
     zoneconfidence: Optional[float]
+    zonestatus: PlantStatusEnum
     cameras: list[Camera] = []
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 class CreateZone(BaseModel):
@@ -111,21 +129,23 @@ class CreateZone(BaseModel):
     cameras: list[CreateZoneCamera] = []
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 
+class UpdateZone(BaseModel):
+    zoneconfidence: Optional[float]
 
-    
+
 class Scenario(BaseModel):
     id: int 
     name: str
     description: str 
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 class ReadScenario(BaseModel):
@@ -134,8 +154,8 @@ class ReadScenario(BaseModel):
     description: Optional[str] 
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 class CreateScenario(BaseModel):
@@ -143,8 +163,8 @@ class CreateScenario(BaseModel):
     description: Optional[str] 
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 class Plant(BaseModel):
@@ -154,10 +174,11 @@ class Plant(BaseModel):
     address: str
     plantConfidence: float 
     zones : list[ReadZone] = []
+    plantstatus: PlantStatusEnum
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 class ReadPlant(BaseModel):
@@ -166,11 +187,12 @@ class ReadPlant(BaseModel):
     description: str
     address: str
     plantConfidence: float
-    zones : list[ReadZone] 
+    #zones : Optional[list[ReadZone]]
+    plantstatus: PlantStatusEnum 
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
 class CreatePlant(BaseModel):
@@ -180,7 +202,43 @@ class CreatePlant(BaseModel):
     plantConfidence: float
 
     class Config:
-        orm_mode = True
-        allow_population_by_field_name = True
+        from_attributes = True
+        populate_by_name = True
         arbitrary_types_allowed = True
 
+class UpdatePlant(BaseModel):
+    plantConfidence: float
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+class ReadAssignee(BaseModel):
+    id: int
+    name: str
+    email: str
+    phone: str
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+class ReadDetectionType(BaseModel):
+    id: int 
+    name: str
+    description: str 
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
+class CreateInstance(BaseModel):
+    recording: CreateRecording
+    scenarios: list[ReadScenario]
+
+class ReadInstance(BaseModel):
+    recording: ReadRecording
+    scenarios: list[ReadScenario]
