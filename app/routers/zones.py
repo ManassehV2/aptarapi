@@ -44,3 +44,33 @@ def get_cameras_in_zone_by_id(zone_id: int, db: Session = Depends(get_db)):
 def create_zone(new_zone: schemas.CreateZone, db: Session = Depends(get_db)):
     return crud.create_zone(db=db, new_zone=new_zone)
 
+@router.put("/{zone_id}", response_model=schemas.ReadZone)
+async def update_zone(zone_id: int, zone: schemas.UpdateZone, db: Session = Depends(get_db)):
+    db_zone = crud.update_zone(db=db, zone_id=zone_id, zone_to_update=zone)
+    if not db_zone:
+        raise HTTPException(status_code=404, detail="No Zone found with the given id")
+    return db_zone
+
+
+@router.get("/instance/{instance_id}", response_model=schemas.ReadInstance)
+def get_instance_detail(instance_id: int, db: Session = Depends(get_db)):
+    db_instance = crud.get_instance_by_id(db=db, instance_id=instance_id)
+    instance_scenarios = crud.get_all_record_scenarios(db=db, recording_id=db_instance.id)
+
+    details = schemas.ReadInstance(recording=db_instance, scenarios=instance_scenarios)
+    if not details:
+        raise HTTPException(status_code=404, detail="instance not found")
+    return details
+
+@router.get("/instances/{zone_id}", response_model=list[schemas.ReadInstance])
+def get_all_zone_instances(zone_id: int, db: Session = Depends(get_db)):
+    instanceslist = []
+    zone_instances = crud.get_instance_by_zone_id(db=db, zone_id=zone_id)
+
+    for instance in zone_instances:
+        instance_scenarios = crud.get_all_record_scenarios(db=db, recording_id=instance.id)
+        instanceslist.append(schemas.ReadInstance(recording=instance, scenarios=instance_scenarios))
+    
+    if not instanceslist:
+        raise HTTPException(status_code=404, detail="No instances found for a given zone")
+    return instanceslist

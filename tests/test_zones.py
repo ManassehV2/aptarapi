@@ -43,6 +43,6 @@ def test_get_zone_by_id_not_found():
     assert response.status_code == 404
 
 def test_get_zone_by_plant_id_not_found():
-    plantid = 1000
-    response = client.get(f"/plants/zones/{plantid}")
+    plantid = 1000000
+    response = client.get(f"/plants/zones/{plantid}?zone_status=active")
     assert response.status_code == 404
