@@ -1,18 +1,15 @@
 from collections import defaultdict
 import math
-import os
 import time
 import cv2
 import redis
-from celery import Celery
 from sqlalchemy import desc
-from sqlalchemy.orm import Session
 from ultralytics import YOLO
 
 from app.database import SessionLocal
 from app.models import Incident
 from .celery import celery_app
-from . import crud, schemas
+from . import crud
 from datetime import datetime, timezone
 from app.celery import celery_app
 
