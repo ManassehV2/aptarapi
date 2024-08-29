@@ -29,12 +29,12 @@ def compute_center(box):
     center_y = (box[1] + box[3]) / 2
     return (center_x, center_y)
 
-def compute_euclidean_distance(boxA, boxB):
+def compute_euclidean_distance(box_a, box_b):
     """Compute the Euclidean distance between the centers of two bounding boxes."""
-    centerA = compute_center(boxA)
-    centerB = compute_center(boxB)
+    center_a = compute_center(box_a)
+    center_b= compute_center(box_b)
     
-    distance = math.sqrt((centerA[0] - centerB[0]) ** 2 + (centerA[1] - centerB[1]) ** 2)
+    distance = math.sqrt((center_a[0] - center_b[0]) ** 2 + (center_a[1] - center_b[1]) ** 2)
     return distance
 
 def check_proximity(person_box, forklift_box, threshold_distance=50):
@@ -84,7 +84,7 @@ def handle_proximity_detections(model, frame, confidence, proximity_threshold=35
 
     return frame, False, detected_classes
 
-def save_proximity_detection(db, buffer, record_id, detected_classes):
+def save_proximity_detection(db, buffer, record_id):
     current_timestamp = datetime.now(timezone.utc)  # Get the current timestamp once
     class_name = 'person_forklift_proximity'
     cache_key = f"{record_id}_{class_name}"
@@ -432,7 +432,7 @@ def run_proximity_detection(self, camera_id, model_path, record_id):
 
             if proximity_detected:
                 buffer = cv2.imencode('.jpg', frame)[1]
-                save_proximity_detection(db, buffer, record_id, detected_classes)
+                save_proximity_detection(db, buffer, record_id)
 
             elapsed_time = time.time() - start_time
             time.sleep(max(0, 0.1 - elapsed_time))
