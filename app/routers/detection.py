@@ -1,9 +1,11 @@
 
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from app.tasks import run_detection, redis_client
+from app.tasks import run_ppe_detection, run_pallet_detection, run_proximity_detection
 from ..database import SessionLocal
 from .. import crud, schemas
+from celery.result import AsyncResult
+from ..celery import celery_app
 
 
 router = APIRouter(
@@ -43,7 +45,13 @@ async def start_detection(new_instance: schemas.CreateInstance, db: Session = De
     selected_model = crud.get_detection_model_by_id(db, recording.detection_type_id)
 
     # Start the Celery task
-    task = run_detection.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
+    if selected_model.id == 1:
+        task = run_ppe_detection.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
+    elif selected_model.id == 2:
+        task = run_pallet_detection.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
+    else:
+        task = run_proximity_detection.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
+
     # Save the Celery task ID to the recording for later reference
     crud.update_recording_task_id(db, recording.id, task.id)
 
@@ -56,13 +64,19 @@ async def stop_detection(recording_id: int, db: Session = Depends(get_db)):
     recording = crud.get_recording(db, recording_id)
     if not recording:
         raise HTTPException(status_code=404, detail="Recording not found")
+    
+    # Get the task result using the task ID
+    task_result = AsyncResult(recording.task_id, app=celery_app)
 
-    # Signal the Celery task to stop
-    redis_client.set(f"stop_{recording_id}", "1")
+    if task_result is None or task_result.state in ['SUCCESS', 'FAILURE', 'REVOKED']:
+        # If the task is already completed or does not exist
+        raise HTTPException(status_code=404, detail="Task not found or already completed")
+    
+    # Revoke the task, terminate=True will kill the task if it's still running
+    task_result.revoke(terminate=True)
 
     # Update the recording end time
     crud.update_recording(db=db, recording_id=recording_id)
-
     return {"status": "Detection stopped", "recording_id": recording_id}
 
 
