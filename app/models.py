@@ -48,7 +48,7 @@ class Zone(Base):
     description = Column(String(100))
     zoneconfidence = Column(Float)
     plant_id = Column(Integer, ForeignKey("plants.id"))
-    zonestatus = Column(Enum(PlantStatus), default=PlantStatus.inactive, nullable=False)
+    zonestatus = Column(Enum(PlantStatus), default=PlantStatus.active, nullable=False)
     assignee_id = Column(Integer, ForeignKey("assignees.id"))
 
     plant = relationship("Plant", back_populates="zones")
