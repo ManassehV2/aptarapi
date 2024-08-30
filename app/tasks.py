@@ -440,3 +440,9 @@ def run_proximity_detection(self, camera_id, model_path, record_id):
 
     finally:
         db.close()
+
+
+# Register tasks in globals()
+globals()['run_ppe_detection'] = run_ppe_detection
+globals()['run_pallet_detection'] = run_pallet_detection
+globals()['run_proximity_detection'] = run_proximity_detection
