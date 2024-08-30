@@ -10,7 +10,7 @@ celery_app = Celery(
     backend="redis://localhost:6379/0"
 )
 celery_app.conf.task_routes = {
-    "app.worker.some_task": "main-queue",
+    "app.worker.detection_tasks": "main-queue",
 }
 celery_app.conf.update(
     task_serializer="json",
