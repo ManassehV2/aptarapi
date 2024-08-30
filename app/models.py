@@ -117,6 +117,7 @@ class DetectionType(Base):
     name = Column(String(100), index=True)
     description = Column(String(100))
     modelpath = Column(String(100))
+    task_name = Column(String(100))
 
     recordings = relationship("Recording", back_populates="detectiontype")
     

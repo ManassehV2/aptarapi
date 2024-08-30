@@ -22,40 +22,45 @@ def get_db():
 
 @router.post("/start/")
 async def start_detection(new_instance: schemas.CreateInstance, db: Session = Depends(get_db)):
-    if crud.is_camera_available(db, new_instance.recording.camera_id):
-        return {"message": "Camera is in use"}
+    try:
+        if crud.is_camera_available(db, new_instance.recording.camera_id):
+            return {"message": "Camera is in use"}, 409
+
+        # Create a new recording entry in the database
+        recording = crud.create_recording(db, schemas.CreateRecording(
+            name=new_instance.recording.name,
+            zone_id=new_instance.recording.zone_id,
+            assignee_id=new_instance.recording.assignee_id,
+            detection_type=new_instance.recording.detection_type,
+            camera_id=new_instance.recording.camera_id,
+            status=new_instance.recording.status,
+            confidence=new_instance.recording.confidence
+        ))
+
+        if new_instance.scenarios:
+            for scenario in new_instance.scenarios:
+                crud.create_recording_scenarios(db, scenario_id=scenario.id, recording_id=recording.id)
+        
+        # Get selected model with task name
+        selected_model = crud.get_detection_model_by_id(db, recording.detection_type_id)
+        if not selected_model or not selected_model.task_name:
+            return {"message": "Invalid detection type or task not defined"}, 400
+        
+        # Dynamically call the Celery task
+        task_function = globals().get(selected_model.task_name)
+        if not task_function:
+            return {"message": f"Task {selected_model.task_name} not found"}, 500
+        
+        task = task_function.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
+
+        # Save the Celery task ID to the recording for later reference
+        crud.update_recording_task_id(db, recording.id, task.id)
+
+        return {"task_id": task.id, "recording_id": recording.id}
     
-    # Create a new recording entry in the database
-    recording = crud.create_recording(db, schemas.CreateRecording(
-        name=new_instance.recording.name,
-        zone_id=new_instance.recording.zone_id,
-        assignee_id=new_instance.recording.assignee_id,
-        detection_type=new_instance.recording.detection_type,
-        camera_id=new_instance.recording.camera_id,
-        status=new_instance.recording.status,
-        confidence=new_instance.recording.confidence
-    ))
+    except Exception as e:
+        return {"message": str(e)}, 500
 
-    #create recording scenarios if its PPE
-    if new_instance.scenarios:
-        for scenario in new_instance.scenarios:
-            crud.create_recording_scenarios(db, scenario_id=scenario.id, recording_id=recording.id)
-    
-    #get selected model path
-    selected_model = crud.get_detection_model_by_id(db, recording.detection_type_id)
-
-    # Start the Celery task
-    if selected_model.id == 1:
-        task = run_ppe_detection.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
-    elif selected_model.id == 2:
-        task = run_pallet_detection.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
-    else:
-        task = run_proximity_detection.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
-
-    # Save the Celery task ID to the recording for later reference
-    crud.update_recording_task_id(db, recording.id, task.id)
-
-    return {"task_id": task.id, "recording_id": recording.id}
 
 
 @router.post("/stop/{recording_id}")
