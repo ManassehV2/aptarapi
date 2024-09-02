@@ -29,8 +29,8 @@ def init_db():
     finally:
         db.close()
 
-# Create tables if they don't exist
-models.Base.metadata.create_all(bind=engine)
+# Create tables if they don't exist uncomment the next line if you are running the application for the first time
+#models.Base.metadata.create_all(bind=engine)
 
 # Define the lifespan context manager for startup and shutdown events
 @asynccontextmanager
