@@ -1,0 +1,42 @@
+version: "3.8"
+
+services:
+  redis:
+    image: "redis:6.0"
+    ports:
+      - "6379:6379"
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: fastapi_app
+    ports:
+      - "8000:80"
+    depends_on:
+      - redis
+    environment:
+      - DB_CONNECTION_STRING=${DATABASE_CONNECTION_STRING}
+
+  celery_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.celery
+    container_name: celery_worker
+    depends_on:
+      - redis
+    environment:
+      - DB_CONNECTION_STRING=${DATABASE_CONNECTION_STRING}
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=redis://redis:6379/0
+
+  flower:
+    image: mher/flower
+    container_name: flower
+    ports:
+      - "5555:5555"
+    environment:
+      - CELERY_BROKER_URL=redis://redis:6379/0
+    depends_on:
+      - redis
+      - celery_worker

@@ -5,6 +5,10 @@ from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from app import schemas
 from sqlalchemy.exc import NoResultFound
+from sqlalchemy import func
+from datetime import datetime, timedelta
+from sqlalchemy.sql import text
+
 
 from . import models
 
@@ -193,4 +197,65 @@ def get_all_assignees(db: Session):
 
 def get_detection_model_by_id(db: Session, detection_type_id: int):
     return db.query(models.DetectionType).get(detection_type_id)
+
+
+def get_report_data(db: Session, plant_id: int, zone_id: int, days: int, detection_type_id: int):
+     # Filter by date range
+    start_date = datetime.now() - timedelta(days=days)
+
+    # Base query for incidents, starting from the Incident table
+    query = db.query(models.Incident.timestamp, models.Incident.class_name).select_from(models.Incident)
+
+    # Joining the necessary tables
+    query = query.join(models.Recording, models.Incident.recording_id == models.Recording.id)
+    query = query.join(models.Zone, models.Recording.zone_id == models.Zone.id)
+
+    # Apply filters
+    if zone_id:
+        query = query.filter(models.Zone.id == zone_id)
+    else:
+        query = query.filter(models.Zone.plant_id == plant_id)
+    
+    if detection_type_id:
+        query = query.filter(models.Recording.detection_type_id == detection_type_id)
+
+    query = query.filter(models.Incident.timestamp >= start_date)
+
+    # Execute the query to get raw incident data
+    incident_data = query.all()
+
+    # Expand class names
+    expanded_incidents = []
+    for incident in incident_data:
+        timestamp, class_names = incident.timestamp, incident.class_name
+        for class_name in class_names.split(','):
+            expanded_incidents.append((timestamp, class_name.strip()))
+
+    # Prepare the data for incidents by type
+    incidents_by_type_data = {}
+    incidents_timeline_data = {}
+
+    for timestamp, class_name in expanded_incidents:
+        # For pie chart
+        if class_name in incidents_by_type_data:
+            incidents_by_type_data[class_name] += 1
+        else:
+            incidents_by_type_data[class_name] = 1
+
+        # For timeline
+        date = timestamp.strftime('%Y-%m-%d')
+        if date not in incidents_timeline_data:
+            incidents_timeline_data[date] = {}
+        if class_name in incidents_timeline_data[date]:
+            incidents_timeline_data[date][class_name] += 1
+        else:
+            incidents_timeline_data[date][class_name] = 1
+
+    # Convert to the desired output format
+    incidents_by_type = [{"type": class_name, "count": count} for class_name, count in incidents_by_type_data.items()]
+
+    return {
+        "incidents_by_type": incidents_by_type,
+        "incidents_timeline": incidents_timeline_data
+    }
 

@@ -1,6 +1,6 @@
 import datetime
 from enum import Enum
-from typing import Optional
+from typing import Dict, Optional
 from pydantic import BaseModel
 
 
@@ -242,3 +242,15 @@ class CreateInstance(BaseModel):
 class ReadInstance(BaseModel):
     recording: ReadRecording
     scenarios: list[ReadScenario]
+
+class IncidentTypeCount(BaseModel):
+    type: str
+    count: int
+
+class IncidentTimeline(BaseModel):
+    date: str
+    counts: Dict[str, int]  # The key is the incident type, and the value is the count
+
+class CombinedIncidentData(BaseModel):
+    incidents_by_type: list[IncidentTypeCount]
+    incident_timeline: list[IncidentTimeline]
