@@ -1,10 +1,45 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=bugs)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi) [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi) [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi)
 
-# Project Setup Instructions
+## Running the Application with Docker
 
-This document outlines the steps required to set up and run the application. All commands needs to be executed from the root directiory of the project!!
+### Step 1: Modify the Connection String in the `.env` File
 
-## Setting up the Environment
+Open the `.env` file located in the root directory of the project and ensure the `DATABASE_CONNECTION_STRING` variable is correctly configured:
+
+```bash
+DATABASE_CONNECTION_STRING="mysql+mysqlconnector://user:password@server/dbname"
+```
+
+**Replace:**
+
+- `user`: Your database username.
+- `password`: Your database password.
+- `server`: The database server's hostname or IP.
+- `dbname`: The name of your database.
+
+**Note:** If your database server is running on localhost, use `host.docker.internal` as the server address to allow the Docker containers to access it:
+
+`DATABASE_CONNECTION_STRING="mysql+mysqlconnector://user:password@host.docker.internal/dbname"`
+
+### Step 2: Build and Run the Containers
+
+Use Docker Compose to build and run the containers. This will set up the FastAPI app, a Redis instance, a Celery worker, and the Flower monitoring tool.
+
+`docker-compose up --build`
+
+### Step 3: Accessing the Application and Services
+
+1. FastAPI Application: Access the API at `http://localhost:8000`.
+2. Swagger Documentation: The API's documentation page can be accessed at `http://localhost:8000/docs`.
+3. Flower Monitoring Tool: Access Flower at `http://localhost:5555` to monitor Celery tasks.
+
+### Step 4: Stopping the Containers
+
+To stop the running containers, use:
+
+`docker-compose down`
+
+## Running the Project Locally
 
 ### Step 1: Creating a Virtual Environment
 
