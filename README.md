@@ -4,7 +4,7 @@
 
 ### Step 1: Modify the Connection String in the `.env` File
 
-Open the `.env` file located in the root directory of the project and ensure the `DATABASE_CONNECTION_STRING` variable is correctly configured:
+Create a file with `.env` file name in the root directory of the project and add the `DATABASE_CONNECTION_STRING` variable as below:
 
 ```bash
 DATABASE_CONNECTION_STRING="mysql+mysqlconnector://user:password@server/dbname"
