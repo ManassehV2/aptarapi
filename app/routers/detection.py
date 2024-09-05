@@ -56,7 +56,7 @@ async def start_detection(new_instance: schemas.CreateInstance, db: Session = De
             # Save the Celery task ID to the recording for later reference
             crud.update_recording_task_id(db, recording.id, task.id)
             return {"task_id": task.id, "recording_id": recording.id}
-        except:
+        except Exception as e:
              return {"message": str(e)}, 500        
     except Exception as e:
         return {"message": str(e)}, 500
