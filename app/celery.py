@@ -6,8 +6,8 @@ multiprocessing.set_start_method('fork', force=True)
 
 celery_app = Celery(
     "detection_tasks",
-    broker="redis://localhost:6379/0",
-    backend="redis://localhost:6379/0"
+    broker="redis://redis:6379/0",
+    backend="redis://redis:6379/0"
 )
 celery_app.conf.task_routes = {
     "app.worker.detection_tasks": "main-queue",
