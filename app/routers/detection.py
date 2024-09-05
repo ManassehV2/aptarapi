@@ -51,13 +51,13 @@ async def start_detection(new_instance: schemas.CreateInstance, db: Session = De
         if not task_function:
             return {"message": f"Task {selected_model.task_name} not found"}, 500
         
-        task = task_function.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
-
-        # Save the Celery task ID to the recording for later reference
-        crud.update_recording_task_id(db, recording.id, task.id)
-
-        return {"task_id": task.id, "recording_id": recording.id}
-    
+        try:
+            task = task_function.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
+            # Save the Celery task ID to the recording for later reference
+            crud.update_recording_task_id(db, recording.id, task.id)
+            return {"task_id": task.id, "recording_id": recording.id}
+        except:
+             return {"message": str(e)}, 500        
     except Exception as e:
         return {"message": str(e)}, 500
 
@@ -73,7 +73,7 @@ async def stop_detection(recording_id: int, db: Session = Depends(get_db)):
     # Get the task result using the task ID
     task_result = AsyncResult(recording.task_id, app=celery_app)
 
-    if task_result is None or task_result.state in ['SUCCESS', 'FAILURE', 'REVOKED']:
+    if task_result is None: # or task_result.state in ['SUCCESS', 'FAILURE', 'REVOKED']:
         # If the task is already completed or does not exist
         raise HTTPException(status_code=404, detail="Task not found or already completed")
     

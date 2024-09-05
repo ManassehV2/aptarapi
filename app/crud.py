@@ -1,12 +1,12 @@
 from asyncio import Queue
-import datetime
 from fastapi import logger
 from sqlalchemy.orm import Session
 from sqlalchemy.ext.asyncio import AsyncSession
 from app import schemas
 from sqlalchemy.exc import NoResultFound
 from sqlalchemy import func
-from datetime import datetime, timedelta
+import datetime
+from datetime import timedelta
 from sqlalchemy.sql import text
 
 
@@ -109,7 +109,6 @@ def create_scenario(db: Session, new_scenario: schemas.CreateScenario):
 
 
 def create_recording(db: Session, new_recording: schemas.CreateRecording):
-    
     db_recording = models.Recording(starttime=datetime.datetime.now(),
                                     name=new_recording.name,
                                     zone_id=new_recording.zone_id,
@@ -201,7 +200,7 @@ def get_detection_model_by_id(db: Session, detection_type_id: int):
 
 def get_report_data(db: Session, plant_id: int, zone_id: int, days: int, detection_type_id: int):
      # Filter by date range
-    start_date = datetime.now() - timedelta(days=days)
+    start_date = datetime.datetime.now() - timedelta(days=days)
 
     # Base query for incidents, starting from the Incident table
     query = db.query(models.Incident.timestamp, models.Incident.class_name).select_from(models.Incident)
