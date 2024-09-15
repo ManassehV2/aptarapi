@@ -1,4 +1,20 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi) [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=bugs)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi) [![Code Smells](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=code_smells)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi) [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=coverage)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi) [![Duplicated Lines (%)](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=duplicated_lines_density)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi) [![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=ManassehV2_aptarapi&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=ManassehV2_aptarapi)
+
+### Note on Database Migrations and Tests
+
+In the `main.py` file, there is a line related to database schema creation:
+
+`models.Base.metadata.create_all(bind=engine)`
+
+This line has been commented out to bypass a pytest error when running the tests in GitHub Actions.
+If you are running the application locally or with docker-compose and need to create the database schema, uncomment this line in main.py:
+
+`models.Base.metadata.create_all(bind=engine)`
+
+This will ensure that the database tables are created when the application starts.
+
+
+
 ## Running the Application with Docker
 
 ### step 1: Setup Environment Variables
