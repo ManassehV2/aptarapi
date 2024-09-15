@@ -7,13 +7,35 @@ from .database import engine, SessionLocal
 from sqlalchemy.orm import Session
 from contextlib import asynccontextmanager
 
-# Define the function to prepopulate the DetectionType table
+
+def prepopulate_plants(db: Session):
+    if db.query(models.Plant).count() == 0:
+        plants = [
+            models.Plant(name="Aptar Annecy", description="France Manufacturing", address="19 Avenue des Vieux Moulins 74000 Annecy,France", plantConfidence=0.75),
+            models.Plant(name="Aptar Berazategui", description="Argentina Manufacturing", address="Colectora Autovía 2 El Pato, Argentina", plantConfidence=0.75),
+            models.Plant(name="Aptar Chieti", description="Italy Manufacturing", address="66020 San Giovanni Teatino, Chieti, Italy", plantConfidence=0.75),
+            models.Plant(name="Aptar Congers", description="NY Manufacturing", address="250 North Route 303 10920 Congers, NY", plantConfidence=0.75),
+            models.Plant(name="Aptar Dortmund", description="Germany Manufacturing", address="44319 Dortmund, NRW, Germany", plantConfidence=0.75),
+            models.Plant(name="Aptar Jundiai", description="Brazil Manufacturing", address="151 Rua Gil Teixeira Lino SP Brazil", plantConfidence=0.75),
+            models.Plant(name="Aptar Leeds", description="United Kingdom Manufacturing", address="LS27 0SS Morley, England, United Kingdom", plantConfidence=0.75),
+            models.Plant(name="Aptar Madrid", description="Spain Manufacturing", address="28806 Alcalá de Henares, MD, Spain", plantConfidence=0.75),
+            models.Plant(name="Aptar Pescara", description="Italy Manufacturing", address="65024, Manoppello Scalo,Pescara, Italy", plantConfidence=0.75),
+            models.Plant(name="Aptar Weihai", description="China Manufacturing", address="Weihai, Shandong 264204, China", plantConfidence=0.75),
+
+        ]
+        db.add_all(plants)
+        db.commit()
+        print("Pre-populated plants table with initial data.")
+    else:
+        print("Plants table is already populated.")
+
+
 def prepopulate_detection_types(db: Session):
     if db.query(models.DetectionType).count() == 0:
         detection_types = [
-            models.DetectionType(name="PPE Detection", description="Detects PPE compliance", modelpath="./yolomodels/PPE_best_v1.pt", task_name="run_ppe_detection"),
+            models.DetectionType(name="PPE Detection", description="Detects PPE compliance", modelpath="./yolomodels/best_ppe.pt", task_name="run_ppe_detection"),
             models.DetectionType(name="Pallet Detection", description="Detects pallets in the area", modelpath="./yolomodels/best_pallet.pt", task_name="run_pallet_detection"),
-            models.DetectionType(name="Proximity Detection", description="Detects proximity between forklift and person", modelpath="./yolomodels/best_forklift.pt", task_name="run_proximity_detection"),
+            models.DetectionType(name="Proximity Detection", description="Detects proximity between forklift and person", modelpath="./yolomodels/forklift_best.pt", task_name="run_proximity_detection"),
         ]
         db.add_all(detection_types)
         db.commit()
@@ -21,26 +43,22 @@ def prepopulate_detection_types(db: Session):
     else:
         print("Detection types table is already populated.")
 
-# Initialize the database and prepopulate tables
 def init_db():
     db = SessionLocal()
     try:
         prepopulate_detection_types(db)
+        prepopulate_plants(db)
     finally:
         db.close()
 
-# Create tables if they don't exist uncomment the next line if you are running the application for the first time
+
 #models.Base.metadata.create_all(bind=engine)
 
-# Define the lifespan context manager for startup and shutdown events
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup event: initialize the database
     init_db()
     yield
-    # Shutdown event: nothing specific, but you could add cleanup code here
 
-# Initialize the FastAPI application with lifespan context manager
 app = FastAPI(
     title="Aptar Rest API",
     version="1.0.0",
@@ -51,7 +69,6 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# CORS configuration
 origins = [
     "http://localhost:8000",
     "http://127.0.0.1:8000"

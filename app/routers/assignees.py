@@ -27,3 +27,7 @@ def get_all_assignees(db: Session = Depends(get_db)):
      if db_assignees.count() == 0:
         raise HTTPException(status_code=404, detail="No Assignees found")
      return db_assignees
+
+@router.post("/", response_model=schemas.ReadAssignee)
+def create_assignee(new_assignee: schemas.CreateAssignee, db: Session = Depends(get_db)):
+    return crud.create_assignee(db=db, new_assignee=new_assignee)

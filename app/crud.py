@@ -156,7 +156,6 @@ def is_camera_available(db: Session, camera_id: int) -> bool:
 
 def is_camera_exists(db: Session, camera_id: int):
     try:
-        # Query the Camera model to check if the camera_id exists
         return db.query(models.Camera).filter(models.Camera.id == camera_id).one_or_none() is not None
     except NoResultFound:
         return False
@@ -192,6 +191,17 @@ def get_all_record_scenarios(db: Session, recording_id: int):
 
 def get_all_assignees(db: Session):
     return db.query(models.Assignee)
+
+def create_assignee(db: Session, new_assignee: schemas.CreateAssignee):
+
+    db_assignee = models.Assignee(name=new_assignee.name, 
+                            email=new_assignee.email,
+                            phone=new_assignee.phone)
+    
+    db.add(db_assignee)
+    db.commit()
+    db.refresh(db_assignee)
+    return db_assignee
 
 
 def get_detection_model_by_id(db: Session, detection_type_id: int):

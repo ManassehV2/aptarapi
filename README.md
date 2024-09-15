@@ -2,24 +2,28 @@
 
 ## Running the Application with Docker
 
-### Step 1: Modify the Connection String in the `.env` File
+### step 1: Setup Environment Variables
 
-Create a file with `.env` file name in the root directory of the project and add the `DATABASE_CONNECTION_STRING` variable as below:
+Before running the project, you need to set up the environment variables. This is done by creating a `.env` file in the root directory of this project.
 
-```bash
-DATABASE_CONNECTION_STRING="mysql+mysqlconnector://user:password@server/dbname"
-```
+### Steps to Create `.env` File
 
-**Replace:**
+1. In the root directory of the project, create a file named `.env`.
+2. Add the following content to the `.env` file:
 
-- `user`: Your database username.
-- `password`: Your database password.
-- `server`: The database server's hostname or IP.
-- `dbname`: The name of your database.
+   ```env
+   MYSQL_ROOT_PASSWORD=password01
+   MYSQL_DATABASE=aptardb
+   DATABASE_CONNECTION_STRING=mysql+mysqlconnector://root:password01@mysql_db:3306/aptardb
+   ```
 
-**Note:** If your database server is running on localhost, use `host.docker.internal` as the server address to allow the Docker containers to access it:
+3. Save the file.
 
-`DATABASE_CONNECTION_STRING="mysql+mysqlconnector://user:password@host.docker.internal/dbname"`
+These environment variables are required for connecting to the MySQL database used in the project.
+
+- `MYSQL_ROOT_PASSWORD`: Specifies the root password for the MySQL server.
+- `MYSQL_DATABASE`: The name of the MySQL database to be used.
+- `DATABASE_CONNECTION_STRING`: This is the connection string used by the application to connect to the MySQL database.
 
 ### Step 2: Build and Run the Containers
 
