@@ -4,7 +4,7 @@
 
 ### step 1: Setup Environment Variables
 
-Before running the project, you need to set up the environment variables. This is done by creating a `.env` file in the root directory of the project.
+Before running the project, you need to set up the environment variables. This is done by creating a `.env` file in the root directory of this project.
 
 ### Steps to Create `.env` File
 
