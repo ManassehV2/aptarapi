@@ -4,12 +4,12 @@ In the `main.py` file, there is a line related to database schema creation:
 
 ```python
 # models.Base.metadata.create_all(bind=engine)
-
+'''
 This line has been commented out to bypass a pytest error when running the tests in GitHub Actions.
 If you are running the application locally or with docker-compose and need to create the database schema, uncomment this line in main.py:
 '''python
 models.Base.metadata.create_all(bind=engine)
-
+'''
 This will ensure that the database tables are created when the application starts. 
 
 ## Running the Application with Docker
