@@ -328,7 +328,7 @@ def run_ppe_detection(self, camera_id, model_path, record_id):
 
     try:
         model = YOLO(model_path)
-        cap = initialize_camera(crud.get_camera_by_id(db, camera_id).ipaddress)
+        cap = initialize_camera2(crud.get_camera_by_id(db, camera_id).ipaddress, "./yolomodels/testvideo.mp4")
         confidence = (crud.get_recording(db=db, recording_id=record_id).confidence / 100) or crud.get_zone_confidence_level(db, camera_id)
         recordingscenarios = crud.get_zone_scenario(db=db, recording_id=record_id)
         

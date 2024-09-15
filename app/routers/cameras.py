@@ -36,17 +36,14 @@ def get_camera_by_id(camera_id: int, db: Session = Depends(get_db)):
 async def websocket_endpoint(websocket: WebSocket, camera_id: int, db: Session = Depends(get_db)):
     await websocket.accept()
 
-    # Fetch the camera from the database
     camera = crud.get_camera_by_id(db=db, camera_id=camera_id)
     if not camera:
         await websocket.send_text(f"Camera with ID {camera_id} not found.")
         await websocket.close()
         return
 
-    # Try to connect to the IP camera using its IP address
     cap = cv2.VideoCapture(camera.ipaddress)
 
-    # If connection to IP camera fails, default to the first webcam (index 0)
     if not cap.isOpened():
         await websocket.send_text("Could not connect to the IP camera. Switching to default webcam.")
         cap = cv2.VideoCapture(0)  # Default to the first webcam
@@ -64,24 +61,20 @@ async def websocket_endpoint(websocket: WebSocket, camera_id: int, db: Session =
                 await websocket.send_text("Failed to read frame from camera.")
                 break
 
-            # Encode the frame to send it via WebSocket
             _, buffer = cv2.imencode('.jpg', frame)
             frame_bytes = buffer.tobytes()
 
             try:
                 await websocket.send_bytes(frame_bytes)
             except RuntimeError as e:
-                # Handle the case where the WebSocket is closed during sending
                 print("WebSocket closed while sending data:", e)
                 break
 
-            # Add a small delay to control the frame rate
             await asyncio.sleep(0.1)
 
     except WebSocketDisconnect:
         print("WebSocket disconnected.")
     finally:
         cap.release()
-        # Ensure WebSocket is closed
         await websocket.close()
 

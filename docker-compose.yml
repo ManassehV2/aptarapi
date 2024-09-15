@@ -6,6 +6,23 @@ services:
     ports:
       - "6379:6379"
 
+  mysql:
+    image: "mysql:8.0"
+    container_name: mysql_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: aptardb
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
   web:
     build:
       context: .
@@ -14,7 +31,10 @@ services:
     ports:
       - "8000:80"
     depends_on:
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       - DB_CONNECTION_STRING=${DATABASE_CONNECTION_STRING}
 
@@ -24,7 +44,10 @@ services:
       dockerfile: Dockerfile.celery
     container_name: celery_worker
     depends_on:
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_started
     environment:
       - DB_CONNECTION_STRING=${DATABASE_CONNECTION_STRING}
       - CELERY_BROKER_URL=redis://redis:6379/0
@@ -40,3 +63,6 @@ services:
     depends_on:
       - redis
       - celery_worker
+
+volumes:
+  mysql_data:

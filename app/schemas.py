@@ -225,6 +225,16 @@ class ReadAssignee(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
 
+class CreateAssignee(BaseModel):
+    name: str
+    email: str
+    phone: str
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        arbitrary_types_allowed = True
+
 class ReadDetectionType(BaseModel):
     id: int 
     name: str
@@ -249,7 +259,7 @@ class IncidentTypeCount(BaseModel):
 
 class IncidentTimeline(BaseModel):
     date: str
-    counts: Dict[str, int]  # The key is the incident type, and the value is the count
+    counts: Dict[str, int] 
 
 class CombinedIncidentData(BaseModel):
     incidents_by_type: list[IncidentTypeCount]
