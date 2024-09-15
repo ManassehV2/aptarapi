@@ -13,8 +13,6 @@ If you are running the application locally or with docker-compose and need to cr
 
 This will ensure that the database tables are created when the application starts.
 
-
-
 ## Running the Application with Docker
 
 ### step 1: Setup Environment Variables
@@ -116,3 +114,9 @@ Now, once you have the enviromenment prepared, you can run the application, from
 ### Step 7: Accessing the API's swagger doc page
 
 Once you have the application up and running, the API's docmentation page(swagger) can be accessed at http://127.0.0.1:8000/docs/ where you can send your requests to the app post end point
+
+## System Architecture
+
+Below is the system architecture of the application:
+
+![System Architecture](./images/architecture-diagram.png)
