@@ -64,5 +64,15 @@ services:
       - redis
       - celery_worker
 
+  angular_app:
+    build:
+      context: https://github.com/mariamaOlive/ediss-internship-frontend.git
+      dockerfile: Dockerfile
+    image: aptar-angular-app:latest
+    ports:
+      - "8080:80"
+    depends_on:
+      - web
+
 volumes:
   mysql_data:
