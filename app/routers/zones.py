@@ -1,6 +1,8 @@
 from fastapi import APIRouter
 from fastapi import Depends, HTTPException
 from sqlalchemy.orm import Session
+
+from app.models import PlantStatus
 from ..database import SessionLocal
 from .. import crud, schemas
 
@@ -74,3 +76,16 @@ def get_all_zone_instances(zone_id: int, db: Session = Depends(get_db)):
     if not instanceslist:
         raise HTTPException(status_code=404, detail="No instances found for a given zone")
     return instanceslist
+
+@router.delete("/{zone_id}", response_model=schemas.ReadZone)
+def inactivate_zone(zone_id: int, db: Session = Depends(get_db)):
+    db_zone = crud.get_zone_by_id(db, zone_id=zone_id)
+    if not db_zone:
+        raise HTTPException(status_code=404, detail="No Zone found with the given id")
+    
+    if db_zone.zonestatus == PlantStatus.inactive:
+        raise HTTPException(status_code=400, detail="Zone is already inactive")
+
+    updated_zone = crud.update_zone_status(db=db, zone_id=zone_id)
+    
+    return updated_zone

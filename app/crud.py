@@ -28,7 +28,7 @@ def get_instance_by_zone_id(db: Session, zone_id: int):
     return db.query(models.Recording).filter(models.Recording.zone_id == zone_id)
 
 def get_all_zone(db: Session):
-    return db.query(models.Zone)
+    return db.query(models.Zone).filter(models.Zone.zonestatus == schemas.PlantStatusEnum.active)
 
 def get_zone_by_id(db: Session, zone_id: int):
     return db.query(models.Zone).filter(models.Zone.id == zone_id).first()
@@ -39,8 +39,8 @@ def get_cameras_in_zone_by_id(db: Session, zone_id: int):
 def get_camera_by_id(db: Session, camera_id: int):
     return db.query(models.Camera).get(camera_id)
 
-def get_zone_by_plant_id(db: Session, plant_id: int,  zone_status: schemas.PlantStatusEnum):
-    return db.query(models.Zone).filter(models.Zone.plant_id == plant_id, models.Zone.zonestatus == zone_status.value)
+def get_zone_by_plant_id(db: Session, plant_id: int):
+    return db.query(models.Zone).filter(models.Zone.plant_id == plant_id, models.Zone.zonestatus == schemas.PlantStatusEnum.active)
 
 def create_zone(db: Session, new_zone: schemas.CreateZone):
     zonecameras = []
@@ -60,6 +60,9 @@ def create_zone(db: Session, new_zone: schemas.CreateZone):
     db.refresh(db_zone)
 
     return db_zone
+
+def get_plant_by_id(db: Session, plant_id: int):
+    return  db.query(models.Plant).get(plant_id)
 
 def create_plant(db: Session, new_plant: schemas.CreatePlant):
     db_plant = models.Plant(name=new_plant.name, 
@@ -81,6 +84,26 @@ def update_plant(db: Session, plant_id: int, plant_to_update: schemas.UpdatePlan
         db.commit()
         db.refresh(db_plant)
         return db_plant
+    else:
+        return None
+
+def update_plant_status(db: Session, plant_id: int):
+    db_plant = get_plant_by_id(db=db, plant_id=plant_id)
+    if db_plant:
+        db_plant.plantstatus = schemas.PlantStatusEnum.inactive
+        db.commit()
+        db.refresh(db_plant)
+        return db_plant
+    else:
+        return None
+    
+def update_zone_status(db: Session, zone_id: int):
+    db_zone = get_zone_by_id(db=db,zone_id=zone_id)
+    if db_zone:
+        db_zone.zonestatus = schemas.PlantStatusEnum.inactive
+        db.commit()
+        db.refresh(db_zone)
+        return db_zone
     else:
         return None
     

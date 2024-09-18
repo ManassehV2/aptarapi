@@ -32,6 +32,7 @@ def get_camera_by_id(camera_id: int, db: Session = Depends(get_db)):
     return db_camera
 
 
+
 @router.websocket("/ws/camera/{camera_id}")
 async def websocket_endpoint(websocket: WebSocket, camera_id: int, db: Session = Depends(get_db)):
     await websocket.accept()
@@ -45,17 +46,13 @@ async def websocket_endpoint(websocket: WebSocket, camera_id: int, db: Session =
     cap = cv2.VideoCapture(camera.ipaddress)
 
     if not cap.isOpened():
-        await websocket.send_text("Could not connect to the IP camera. Switching to default webcam.")
-        cap = cv2.VideoCapture(0)  # Default to the first webcam
-
-        if not cap.isOpened():
-            await websocket.send_text("Could not connect to the default webcam either.")
-            await websocket.close()
-            return
+        await websocket.send_text(f"Could not connect to the IP camera at {camera.ipaddress}.")
+        await websocket.close()
+        return
 
     try:
         while True:
-            ret, frame = cap.read()
+            ret, frame = await asyncio.to_thread(cap.read)
 
             if not ret:
                 await websocket.send_text("Failed to read frame from camera.")
@@ -74,7 +71,8 @@ async def websocket_endpoint(websocket: WebSocket, camera_id: int, db: Session =
 
     except WebSocketDisconnect:
         print("WebSocket disconnected.")
+    except Exception as e:
+        print(f"An error occurred: {e}")
     finally:
         cap.release()
         await websocket.close()
-
