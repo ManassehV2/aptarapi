@@ -1,5 +1,6 @@
 # test_zones.py
 
+from app import schemas
 from app.models import Zone
 from app.routers import zones
 from tests.test_utils import setup_router_override, client, TestingSessionLocal
@@ -46,3 +47,42 @@ def test_get_zone_by_plant_id_not_found():
     plantid = 1000000
     response = client.get(f"/plants/zones/{plantid}?zone_status=active")
     assert response.status_code == 404
+
+def test_update_zone_status_200():
+    session = TestingSessionLocal()
+    testzone = Zone(
+        title="testzone", 
+        description="testplantdescription",  
+        zoneconfidence=0.85, 
+        zonestatus= schemas.PlantStatusEnum.active,
+        plant_id=1, 
+        assignee_id=1)
+    
+    session.add(testzone)
+    session.commit()
+    session.refresh(testzone)
+    response = client.delete(f"/zones/{testzone.id}")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["title"] == "testzone"
+    assert data["zonestatus"] == schemas.PlantStatusEnum.inactive
+
+def test_update_zone_status_404():
+    response = client.delete("/zones/1000000")
+    assert response.status_code == 404
+
+def test_update_zone_status_400():
+    session = TestingSessionLocal()
+    testzone = Zone(
+        title="testzone", 
+        description="testplantdescription",  
+        zoneconfidence=0.85, 
+        zonestatus= schemas.PlantStatusEnum.inactive,
+        plant_id=1, 
+        assignee_id=1)
+    
+    session.add(testzone)
+    session.commit()
+    session.refresh(testzone)
+    response = client.delete(f"/zones/{testzone.id}")
+    assert response.status_code == 400
