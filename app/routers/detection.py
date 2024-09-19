@@ -1,7 +1,9 @@
 
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from app.tasks import run_ppe_detection, run_pallet_detection, run_proximity_detection
+from app.ppetask import run_ppe_detection
+from app.palletstask import run_pallet_detection
+from app.forklifttask import run_proximity_detection
 from ..database import SessionLocal
 from .. import crud, schemas
 from celery.result import AsyncResult
