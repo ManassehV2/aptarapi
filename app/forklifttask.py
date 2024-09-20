@@ -11,9 +11,8 @@ from .celery import celery_app
 from . import crud
 from datetime import datetime, timezone
 from app.celery import celery_app
-from app.commontasks import initialize_camera, process_frame, should_skip_detection
+from app.commontasks import initialize_camera, process_frame, should_skip_detection, detection_cache
 
-forklift_detection_cache = defaultdict(lambda: None)
 
 def compute_center(box):
     """Compute the center (x, y) of a bounding box."""
@@ -84,7 +83,7 @@ def save_proximity_detection(db, buffer, record_id):
     if should_skip_detection(cache_key, db, record_id, class_name, current_timestamp, debounce_time_seconds=1*60):
         return
 
-    forklift_detection_cache[cache_key] = current_timestamp
+    detection_cache[cache_key] = current_timestamp
 
     db_detection = Incident(
         recording_id=record_id,

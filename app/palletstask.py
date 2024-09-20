@@ -9,9 +9,7 @@ from .celery import celery_app
 from . import crud
 from datetime import datetime, timezone
 from app.celery import celery_app
-from app.commontasks import initialize_camera, process_frame, should_skip_detection
-
-pallets_detection_cache = defaultdict(lambda: None)
+from app.commontasks import initialize_camera, process_frame, should_skip_detection, detection_cache
 
 
 def save_pallet_detection(db, buffer, record_id, class_name, confidence, current_timestamp):
@@ -20,7 +18,7 @@ def save_pallet_detection(db, buffer, record_id, class_name, confidence, current
         print(f"Skipping pallet detection for {class_name} due to debounce.")
         return
 
-    pallets_detection_cache[cache_key] = current_timestamp
+    detection_cache[cache_key] = current_timestamp
 
     db_detection = Incident(
         recording_id=record_id,
