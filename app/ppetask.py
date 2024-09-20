@@ -9,9 +9,7 @@ from app.database import SessionLocal
 from app.models import Incident
 from .celery import celery_app
 from app.celery import celery_app
-from app.commontasks import initialize_camera, process_frame, should_skip_detection
-
-ppe_detection_cache = defaultdict(lambda: None)
+from app.commontasks import initialize_camera, process_frame, should_skip_detection, detection_cache
 
 
 
@@ -118,7 +116,7 @@ def save_detections(db, missing_classes, buffer, record_id, detected_classes):
 
 
 def save_detection(db, buffer, record_id, missing_classes, current_timestamp, cache_key, detected_classes):
-    ppe_detection_cache[cache_key] = current_timestamp
+    detection_cache[cache_key] = current_timestamp
 
     missing_classes_str = ','.join(missing_classes)
     
