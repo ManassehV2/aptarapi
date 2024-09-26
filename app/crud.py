@@ -246,7 +246,7 @@ def get_report_data(db: Session, plant_id: int, zone_id: int, days: int, detecti
     if zone_id:
         query = query.filter(models.Zone.id == zone_id)
     else:
-        query = query.filter(models.Zone.plant_id == plant_id)
+        query = query.filter(models.Zone.plant_id == plant_id, models.Zone.zonestatus == models.PlantStatus.active)
     
     if detection_type_id:
         query = query.filter(models.Recording.detection_type_id == detection_type_id)
