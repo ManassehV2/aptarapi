@@ -46,4 +46,4 @@ jobs:
             -Dsonar.sources=app
             -Dsonar.python.coverage.reportPaths=reports/coverage.xml
             -Dsonar.python.xunit.reportPath=reports/results.xml
-            -Dsonar.coverage.exclusions=tests/**,app/ppetask.py,app/palletstask.py,app/forklifttask.py,app/commontasks.py,app/routers/detection.py,app/main.py,app/crud.py,app/routers/report.py,app/db_init.py
+            -Dsonar.coverage.exclusions=tests/**,app/routers/detection.py,app/main.py,app/crud.py,app/routers/report.py,app/db_init.py

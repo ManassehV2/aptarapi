@@ -73,8 +73,6 @@ def get_all_zone_instances(zone_id: int, db: Session = Depends(get_db)):
         instance_scenarios = crud.get_all_record_scenarios(db=db, recording_id=instance.id)
         instanceslist.append(schemas.ReadInstance(recording=instance, scenarios=instance_scenarios))
     
-    if not instanceslist:
-        raise HTTPException(status_code=404, detail="No instances found for a given zone")
     return instanceslist
 
 @router.delete("/{zone_id}", response_model=schemas.ReadZone)

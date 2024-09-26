@@ -1,19 +1,22 @@
-
+import logging
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from app.ppetask import run_ppe_detection
-from app.palletstask import run_pallet_detection
-from app.forklifttask import run_proximity_detection
 from ..database import SessionLocal
 from .. import crud, schemas
 from celery.result import AsyncResult
-from ..celery import celery_app
+from app.celery_config import celery_app
+from celery.result import AsyncResult
+import cv2
 
 
 router = APIRouter(
     prefix="/detection",
     tags=["detection"],
 )
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 
 def get_db():
     db = SessionLocal()
@@ -22,12 +25,40 @@ def get_db():
     finally:
         db.close()
 
+def is_camera_accessible(camera_url: str) -> bool:
+    try:
+        cap = cv2.VideoCapture(camera_url)
+        
+        if not cap.isOpened():
+            logger.warning(f"Camera {camera_url} could not be opened.")
+            return False
+        
+        ret, frame = cap.read()
+        if ret:
+            return True
+        else:
+            logger.warning(f"Camera {camera_url} could not retrieve a frame.")
+            return False
+    
+    except Exception as e:
+        logger.error(f"Failed to connect to camera {camera_url}: {e}")
+        return False
+
+    finally:
+        if 'cap' in locals():
+            cap.release()
+
 @router.post("/start/")
 async def start_detection(new_instance: schemas.CreateInstance, db: Session = Depends(get_db)):
+    if crud.is_camera_available(db, new_instance.recording.camera_id):
+            raise HTTPException(status_code=404, detail="Camera is in use")
+        
+    # Check if the IP camera is accessible using OpenCV
+    selected_camera = crud.get_camera_by_id(db=db, camera_id=new_instance.recording.camera_id)
+    if not is_camera_accessible(selected_camera.ipaddress):
+        raise HTTPException(status_code=400, detail="Cannot connect to the camera. Please check the connection or IP.")
+    
     try:
-        if crud.is_camera_available(db, new_instance.recording.camera_id):
-            return {"message": "Camera is in use"}, 409
-
         recording = crud.create_recording(db, schemas.CreateRecording(
             name=new_instance.recording.name,
             zone_id=new_instance.recording.zone_id,
@@ -44,21 +75,32 @@ async def start_detection(new_instance: schemas.CreateInstance, db: Session = De
         
         selected_model = crud.get_detection_model_by_id(db, recording.detection_type_id)
         if not selected_model or not selected_model.task_name:
-            return {"message": "Invalid detection type or task not defined"}, 400
-        
-    
-        task_function = globals().get(selected_model.task_name)
-        if not task_function:
-            return {"message": f"Task {selected_model.task_name} not found"}, 500
-        
+            raise HTTPException(status_code=400, detail="Invalid detection type or task not defined")
+            
+
         try:
-            task = task_function.delay(new_instance.recording.camera_id, selected_model.modelpath, recording.id)
+            task = celery_app.send_task(selected_model.task_name, args=[new_instance.recording.camera_id, selected_model.modelpath, recording.id],queue="main-queue")
             crud.update_recording_task_id(db, recording.id, task.id)
             return {"task_id": task.id, "recording_id": recording.id}
         except Exception as e:
              return {"message": str(e)}, 500        
     except Exception as e:
         return {"message": str(e)}, 500
+
+@router.get("/task-status/{task_id}")
+async def get_task_status(task_id: str):
+    try:
+        task_result = AsyncResult(task_id, app=celery_app)
+        if task_result.state == "PENDING":
+            return {"status": "Pending", "task_id": task_id}
+        elif task_result.state == "SUCCESS":
+            return {"status": "Completed", "result": task_result.result}
+        elif task_result.state == "FAILURE":
+            return {"status": "Failed", "error": str(task_result.info)}
+        else:
+            return {"status": task_result.state, "task_id": task_id}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error fetching task status: {str(e)}")
 
 
 
