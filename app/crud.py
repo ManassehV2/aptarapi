@@ -232,11 +232,17 @@ def get_detection_model_by_id(db: Session, detection_type_id: int):
 
 
 def get_report_data(db: Session, plant_id: int, zone_id: int, days: int, detection_type_id: int):
-     # Filter by date range
+    # Filter by date range
     start_date = datetime.datetime.now() - timedelta(days=days)
 
     # Base query for incidents, starting from the Incident table
-    query = db.query(models.Incident.timestamp, models.Incident.class_name).select_from(models.Incident)
+    query = db.query(
+        models.Incident.timestamp, 
+        models.Incident.class_name,
+        models.Incident.confidence,
+        models.Incident.bbox,
+        models.Incident.recording_id
+    ).select_from(models.Incident)
 
     # Joining the necessary tables
     query = query.join(models.Recording, models.Incident.recording_id == models.Recording.id)
@@ -283,11 +289,21 @@ def get_report_data(db: Session, plant_id: int, zone_id: int, days: int, detecti
         else:
             incidents_timeline_data[date][class_name] = 1
 
-    # Convert to the desired output format
     incidents_by_type = [{"type": class_name, "count": count} for class_name, count in incidents_by_type_data.items()]
+
+    
+    incidents_details = [
+        {
+            "timestamp": incident.timestamp,
+            "class_name": incident.class_name
+        }
+        for incident in incident_data
+    ]
 
     return {
         "incidents_by_type": incidents_by_type,
-        "incidents_timeline": incidents_timeline_data
+        "incidents_timeline": incidents_timeline_data,
+        "incidents_details": incidents_details
     }
+
 
