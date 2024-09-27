@@ -54,10 +54,10 @@ async def start_detection(new_instance: schemas.CreateInstance, db: Session = De
             raise HTTPException(status_code=404, detail="Camera is in use")
         
     # Check if the IP camera is accessible using OpenCV
-    selected_camera = crud.get_camera_by_id(db=db, camera_id=new_instance.recording.camera_id)
+    '''selected_camera = crud.get_camera_by_id(db=db, camera_id=new_instance.recording.camera_id)
     if not is_camera_accessible(selected_camera.ipaddress):
         raise HTTPException(status_code=400, detail="Cannot connect to the camera. Please check the connection or IP.")
-    
+    '''
     try:
         recording = crud.create_recording(db, schemas.CreateRecording(
             name=new_instance.recording.name,
