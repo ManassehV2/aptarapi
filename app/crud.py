@@ -24,6 +24,9 @@ def get_all_scenarios(db: Session):
 def get_instance_by_id(db: Session, instance_id: int):
     return db.query(models.Recording).get(instance_id)
 
+def get_record_instances(db: Session, instance_id: int):
+    return db.query(models.Incident).filter(models.Incident.recording_id == instance_id)
+    
 def get_instance_by_zone_id(db: Session, zone_id: int):
     return db.query(models.Recording).filter(models.Recording.zone_id == zone_id)
 

@@ -25,11 +25,7 @@ def get_db():
 @router.get("/", response_model=list[schemas.ReadPlant])
 def get_plants(plant_status: schemas.PlantStatusEnum, db: Session = Depends(get_db)):
     
-    db_plants = crud.get_all_plants(db, plant_status=plant_status)
-
-    if db_plants.count() == 0:
-        raise HTTPException(status_code=404, detail="Plants not found")
-    return db_plants
+    return crud.get_all_plants(db, plant_status=plant_status)
 
 @router.post("/", response_model=schemas.ReadPlant)
 def create_plant(new_plant: schemas.CreatePlant, db: Session = Depends(get_db)):
