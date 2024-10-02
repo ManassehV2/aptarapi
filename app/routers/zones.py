@@ -69,7 +69,8 @@ def get_all_zone_instances(zone_id: int, db: Session = Depends(get_db)):
 
     for instance in zone_instances:
         instance_scenarios = crud.get_all_record_scenarios(db=db, recording_id=instance.id)
-        instanceslist.append(schemas.ReadInstance(recording=instance, scenarios=instance_scenarios))
+        instance_incidents = crud.get_record_instances(db=db, instance_id=instance.id)
+        instanceslist.append(schemas.ReadInstance(recording=instance, scenarios=instance_scenarios, instances=instance_incidents))
     
     return instanceslist
 
