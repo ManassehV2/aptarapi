@@ -245,13 +245,27 @@ class ReadDetectionType(BaseModel):
         populate_by_name = True
         arbitrary_types_allowed = True
 
+
+class ReadIncident(BaseModel):
+    timestamp: datetime.datetime
+    class_name: str
+
+    class Config:
+        from_attributes = True
+        populate_by_name = True
+        arbitrary_types_allowed = True
+        
+
+
 class CreateInstance(BaseModel):
     recording: CreateRecording
     scenarios: list[ReadScenario]
 
+
 class ReadInstance(BaseModel):
     recording: ReadRecording
     scenarios: list[ReadScenario]
+    instances: list[ReadIncident]
 
 class IncidentTypeCount(BaseModel):
     type: str

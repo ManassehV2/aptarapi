@@ -9,7 +9,10 @@ setup_router_override(plants)
 
 def test_get_plants_not_found():
     response = client.get("/plants/?plant_status=active")
-    assert response.status_code == 404
+    assert response.status_code == 200, response.text
+    data = response.json()
+
+    assert len(data) == 0
 
 def test_create_plant():
     response = client.post(

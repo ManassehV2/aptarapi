@@ -22,10 +22,7 @@ def get_db():
 
 @router.get("/", response_model=list[schemas.ReadZone])
 def get_zones(db: Session = Depends(get_db)):
-    db_zones = crud.get_all_zone(db)
-    if not db_zones:
-        raise HTTPException(status_code=404, detail="Zone not found")
-    return db_zones
+    return crud.get_all_zone(db)
 
 @router.get("/{zone_id}", response_model=schemas.ReadZone)
 def get_zone_by_id(zone_id: int, db: Session = Depends(get_db)):
@@ -58,8 +55,9 @@ async def update_zone(zone_id: int, zone: schemas.UpdateZone, db: Session = Depe
 def get_instance_detail(instance_id: int, db: Session = Depends(get_db)):
     db_instance = crud.get_instance_by_id(db=db, instance_id=instance_id)
     instance_scenarios = crud.get_all_record_scenarios(db=db, recording_id=db_instance.id)
+    instance_incidents = crud.get_record_instances(db=db, instance_id=instance_id)
 
-    details = schemas.ReadInstance(recording=db_instance, scenarios=instance_scenarios)
+    details = schemas.ReadInstance(recording=db_instance, scenarios=instance_scenarios, instances=instance_incidents)
     if not details:
         raise HTTPException(status_code=404, detail="instance not found")
     return details
