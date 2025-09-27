@@ -117,6 +117,6 @@ Once you have the application up and running, the API's docmentation page(swagge
 
 ## System Architecture
 
-Below is the system architecture of the application:
+The following is the system architecture of the application:
 
 ![System Architecture](./images/architecture-diagram.png)
