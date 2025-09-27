@@ -1,8 +1,7 @@
 name: Build
 on:
   push:
-    branches:
-      - master
+    branches: [ master ]
   pull_request:
     types: [opened, synchronize, reopened]
 
@@ -10,35 +9,51 @@ jobs:
   sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write      # for PR decoration/comments
     env:
       DB_CONNECTION_STRING: "mysql+mysqlconnector://user:password@localhost/dbname"
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}  # export token at job level
 
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
           python-version: "3.10"
 
       - name: Install Dependencies
-        run: |
-          pip install -r requirements.txt
+        run: pip install -r requirements.txt
 
       - name: Run Tests with Coverage
         run: |
+          mkdir -p reports
           pytest --junitxml=reports/results.xml --cov=app --cov-report=xml
-          coverage xml -i  # Regenerate the XML report with corrected paths
-          mv coverage.xml reports/coverage.xml  # Move the report to the correct directory
+          coverage xml -i || true
+          [ -f coverage.xml ] && mv -f coverage.xml reports/coverage.xml || true
 
+      # --- Debug: confirm SONAR_TOKEN availability without printing it ---
+      - name: Debug SONAR_TOKEN presence
+        run: |
+          if [ -z "${SONAR_TOKEN}" ]; then
+            echo "❌ SONAR_TOKEN is NOT available to this job."
+            echo "If this is a PR from a fork, this is expected (GitHub masks secrets)."
+          else
+            echo "✅ SONAR_TOKEN is available."
+          fi
+
+      # --- Run Sonar only when the token is available and PR is not from a fork ---
       - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@master
+        if: env.SONAR_TOKEN != '' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
+        uses: SonarSource/sonarqube-scan-action@v5.0.0
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # for PR decoration
+          # No SONAR_HOST_URL needed for SonarCloud
         with:
           args: >
             -Dsonar.projectKey=ManassehV2_aptarapi
